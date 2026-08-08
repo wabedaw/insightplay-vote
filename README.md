@@ -61,12 +61,21 @@ cd insightplay-vote && npm install && npm run dev
 
 ### ② 环境变量 —— 后台（发信当前用不到）
 
-复制 `.env.example`：
+复制 `.env.example` 成 `.env`：
 
 ```bash
 PUBLIC_BASE_URL=https://vote.insightedu.io   # 站点对外地址
-ADMIN_KEY=<一长串随机字符>                    # 不设的话 /api/admin/* 全部关闭
+ADMIN_KEY=<后台登录密码>                      # 不设的话 /api/admin/* 全部关闭
 ```
+
+`server.js` 启动时会自己读同目录的 `.env`（没上 dotenv，就十几行；文件不存在就跳过）。
+
+> ⚠️ **`.env` 在 `.gitignore` 里，不会进仓库** —— 所以从 GitHub 拉代码部署的平台
+> （Render / Railway / Fly）**拿不到这个文件**，后台会以「没设 ADMIN_KEY」启动、
+> 整个关闭（登录返回 503）。
+>
+> 这类平台要在**它自己的 Environment / Variables 面板**里加 `ADMIN_KEY`。
+> 平台上设的值优先级高于 `.env`，两边都有时以平台为准。
 
 **下面这些只在 `requireEmailVerification: true` 时才需要**，
 当前配置下不发任何邮件，可以先不管。发信通道三选一，按环境变量自动判断：

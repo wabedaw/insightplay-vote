@@ -15,6 +15,33 @@
 
 const express = require('express');
 const path = require('path');
+const fs = require('fs');
+
+/**
+ * 读 .env（如果有）。没上 dotenv —— 这点活不值得多一个依赖，
+ * 也不想依赖 --env-file（要 Node 20.6+，而 README 写的是 18+）。
+ *
+ * ⚑ 真正的环境变量优先：平台（Render / Railway）上设的值不会被
+ *   仓库里残留的 .env 盖掉。文件不存在就静默跳过。
+ */
+(function loadDotenv() {
+  const file = path.join(__dirname, '.env');
+  let raw;
+  try { raw = fs.readFileSync(file, 'utf8'); } catch (_) { return; }
+  for (const line of raw.split('\n')) {
+    const s = line.trim();
+    if (!s || s[0] === '#') continue;
+    const eq = s.indexOf('=');
+    if (eq < 1) continue;
+    const key = s.slice(0, eq).trim();
+    if (process.env[key] !== undefined) continue;      // 已有的不覆盖
+    let val = s.slice(eq + 1).trim();
+    if (val.length > 1 && (val[0] === '"' || val[0] === "'") && val.at(-1) === val[0]) {
+      val = val.slice(1, -1);
+    }
+    process.env[key] = val;
+  }
+})();
 
 const CONFIG = require('./config');
 const store = require('./lib/store');
