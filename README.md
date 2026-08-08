@@ -206,7 +206,7 @@ insightplay-vote/
 └── data/votes-db.json   ← 投票数据（gitignore，记得备份）
 ```
 
-> 改了 `styles.css` / `app.js` / `i18n.js` 之后，把 `index.html` 里的 `?v=36`
+> 改了 `styles.css` / `app.js` / `i18n.js` 之后，把 `index.html` 里的 `?v=37`
 > **和 `server.js` 顶部的 `ASSET_V`** 一起往上加一位（验证页也引同一份 CSS），
 > 否则回访用户拿到的还是浏览器缓存里的旧文件。
 

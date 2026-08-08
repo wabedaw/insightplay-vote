@@ -641,7 +641,25 @@ body.has-ballot{padding-bottom:84px}
 .a-login-card .field{text-align:left}
 
 .a-main{padding-bottom:80px}
-.a-stats{margin:26px 0 0}
+/* 后台的四个概览数字。
+   原来是蹭首屏那条 .stats/.stat 的样式，首屏数据条删掉之后这里就裸了 ——
+   现在自带一份，不再依赖别处。 */
+.a-stats{
+  margin:26px 0 0;
+  display:grid;grid-template-columns:repeat(4,1fr);gap:1px;
+  background:rgba(17,24,39,.09);
+  border:1px solid rgba(17,24,39,.08);border-radius:16px;overflow:hidden;
+}
+.a-stats .stat{background:#F7EEEF;padding:14px 10px;text-align:center}
+.a-stats .stat b{
+  display:block;font-size:clamp(22px,3.4vw,30px);font-weight:850;
+  letter-spacing:-.8px;line-height:1.15;font-variant-numeric:tabular-nums;
+}
+.a-stats .stat span{display:block;font-size:12px;color:var(--muted);letter-spacing:.4px;margin-top:2px}
+.a-stats .stat.live b{color:var(--red-dk)}
+@media (max-width:640px){
+  .a-stats{grid-template-columns:repeat(2,1fr)}
+}
 .a-h3{font-size:19px;font-weight:820;letter-spacing:-.4px;margin:48px 0 16px}
 .a-note{font-size:12.5px;color:var(--dim);line-height:1.75;margin-top:14px;max-width:76ch}
 .a-empty{color:var(--muted);font-size:14.5px;padding:18px 0}

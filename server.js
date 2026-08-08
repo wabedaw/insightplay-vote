@@ -60,7 +60,7 @@ const ADMIN_KEY = process.env.ADMIN_KEY || '';
 const DEV_SHOW_LINK = process.env.DEV_SHOW_LINK === '1';
 const REVEAL = process.env.REVEAL_RESULTS === '1' || CONFIG.revealResults === true;
 const TOKEN_TTL_MS = 48 * 60 * 60 * 1000; // 验证链接有效期 48h
-const ASSET_V = 36; // 改了 public/*.css|js 就 +1，让浏览器丢掉旧缓存
+const ASSET_V = 37; // 改了 public/*.css|js 就 +1，让浏览器丢掉旧缓存
 
 const BALLOT = {
   budget: Number(CONFIG.ballot && CONFIG.ballot.budget) || 10,
