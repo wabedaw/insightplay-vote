@@ -1,0 +1,275 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Cast your 10 stars · insightPLAY × Lokotopia Student Founder&#39;s Club</title>
+<meta name="description" content="Five study apps built by students. One gets built for real. You get 10 stars, max 5 per app — how you split them decides the winner.">
+<meta name="theme-color" content="#EF3340">
+<meta property="og:title" content="Cast your 10 stars · insightPLAY student app vote">
+<meta property="og:description" content="Five study apps, one shipping slot. You get 10 stars — how you split them decides which one gets built.">
+<meta property="og:type" content="website">
+<!-- 改了 styles.css / app.js 记得把 ?v= 往上加一位（server.js 的 ASSET_V 也要同步） -->
+<link rel="stylesheet" href="/styles.css?v=36">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='9' fill='%23EF3340'/><text y='23' x='16' font-size='18' text-anchor='middle'>%E2%98%85</text></svg>">
+</head>
+<body>
+
+<div class="aurora" aria-hidden="true"><i></i><i></i><i></i></div>
+
+<!-- ══ 导航 ══════════════════════════════════════════════ -->
+<header class="nav">
+  <div class="wrap nav-in">
+    <a class="lockup" href="/">
+      <svg class="mark" viewBox="0 0 32 32" aria-hidden="true">
+        <rect width="32" height="32" rx="9" fill="url(#lg)"/>
+        <path d="M5.6 16s4-6.3 10.4-6.3S26.4 16 26.4 16s-4 6.3-10.4 6.3S5.6 16 5.6 16Z" stroke="#fff" stroke-width="1.6" stroke-opacity=".92" fill="none"/>
+        <path d="M14.1 12.8 19.4 16l-5.3 3.2v-6.4Z" fill="#fff"/>
+        <defs><linearGradient id="lg" x1="0" y1="0" x2="32" y2="32">
+          <stop stop-color="#EF3340"/><stop offset=".6" stop-color="#C81E2C"/><stop offset="1" stop-color="#A5121F"/>
+        </linearGradient></defs>
+      </svg>
+      <span class="lockup-txt">
+        <b>InsightEDU<span style="color:#C81E2C">.io</span></b>
+        <span>insightPLAY</span>
+      </span>
+    </a>
+    <div class="nav-div" aria-hidden="true"></div>
+    <div class="nav-tag" data-i18n="brand.tag">—</div>
+    <nav class="nav-links">
+      <a href="#apps" data-i18n="nav.apps">—</a>
+      <a href="#how" data-i18n="nav.how">—</a>
+      <a href="#rules" data-i18n="nav.rules">—</a>
+      <div class="lang" id="langSwitch" role="group" aria-label="Language / 语言">
+        <button type="button" data-lang="en">EN</button>
+        <button type="button" data-lang="zh">中文</button>
+      </div>
+      <a class="btn btn-primary" href="#apps" data-i18n="nav.cta">—</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <!-- ══ Hero：只剩状态 + 倒计时 + 截止日期 ═════════════ -->
+  <section class="hero">
+    <div class="starfield" id="starfield" aria-hidden="true"></div>
+    <svg class="ndp-crest" viewBox="0 0 120 80" aria-hidden="true">
+      <path d="M46 40a24 24 0 1 1-17-23 20 20 0 1 0 0 46 24 24 0 0 1-7-23z"/>
+      <g class="ndp-stars">
+        <use href="#ndpStar" x="52" y="20"/><use href="#ndpStar" x="72" y="20"/>
+        <use href="#ndpStar" x="46" y="39"/><use href="#ndpStar" x="78" y="39"/>
+        <use href="#ndpStar" x="62" y="52"/>
+      </g>
+      <defs><path id="ndpStar" d="M0-7 1.6-2.2 6.7-2.2 2.6.9 4.1 5.7 0 2.7-4.1 5.7-2.6.9-6.7-2.2-1.6-2.2Z"/></defs>
+    </svg>
+    <div class="hero-inner wrap">
+      <div class="kicker"><span class="dot"></span><span data-i18n="hero.status">—</span></div>
+      <h1 class="hero-title" data-i18n="hero.title">—</h1>
+      <div class="cd-label" data-i18n="hero.closesIn">—</div>
+      <div class="countdown" id="countdown" aria-live="off"></div>
+      <p class="hero-deadline"><span data-i18n="hero.closes">—</span> <b id="deadlineInline">—</b></p>
+    </div>
+
+  </section>
+
+  <!-- ══ 作品 ═══════════════════════════════════════════ -->
+  <section class="wrap" id="apps">
+    <div class="sec-head">
+      <div class="sec-kicker" data-i18n="apps.kicker">—</div>
+      <h2 data-i18n="apps.h2">—</h2>
+      <p id="appsSub">—</p>
+    </div>
+    <div class="apps" id="appGrid" aria-live="polite"></div>
+  </section>
+
+  <!-- ══ 星光进度：每 100 颗星点亮一颗 ══════════════════ -->
+  <section class="wrap" id="progressSection" hidden>
+    <div class="prog">
+      <div class="prog-head">
+        <div class="prog-kicker"><span class="dot"></span><span data-i18n="prog.kicker">—</span></div>
+        <h2 data-i18n="prog.h2">—</h2>
+        <p data-i18n="prog.sub">—</p>
+      </div>
+
+      <div class="prog-nums">
+        <div class="prog-num"><b id="progStars">0</b><span data-i18n="prog.stars">—</span></div>
+        <div class="prog-num"><b id="progVoters">0</b><span data-i18n="prog.voters">—</span></div>
+        <div class="prog-num"><b id="progLit">0</b><span data-i18n="prog.lit">—</span></div>
+      </div>
+
+      <!-- 每颗 = perStar 颗星；下一颗按百分比半亮 -->
+      <div class="prog-trail" id="progTrail" role="img" aria-describedby="progNote"></div>
+      <p class="prog-note" id="progNote" aria-live="polite">—</p>
+    </div>
+  </section>
+
+  <!-- ══ 怎么投 ═════════════════════════════════════════ -->
+  <section class="wrap" id="how">
+    <div class="sec-head">
+      <div class="sec-kicker" data-i18n="how.kicker">—</div>
+      <h2 data-i18n="how.h2">—</h2>
+    </div>
+    <div class="steps">
+      <div class="step"><h4 data-i18n="how.s1t">—</h4><p data-i18n-html="how.s1b">—</p></div>
+      <div class="step"><h4 data-i18n="how.s2t">—</h4><p data-i18n-html="how.s2b">—</p></div>
+      <div class="step"><h4 data-i18n="how.s3t">—</h4><p data-i18n-html="how.s3b">—</p></div>
+    </div>
+  </section>
+
+  <!-- ══ 规则 & 奖励 ════════════════════════════════════ -->
+  <section class="wrap" id="rules">
+    <div class="sec-head">
+      <div class="sec-kicker" data-i18n="rules.kicker">—</div>
+      <h2 data-i18n="rules.h2">—</h2>
+    </div>
+
+    <div class="panel prize">
+      <div class="prize-badge">🏆</div>
+      <div class="prize-txt">
+        <h3 data-i18n="prize.h3">—</h3>
+        <p data-i18n="prize.p">—</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ FAQ ════════════════════════════════════════════ -->
+  <section class="wrap" id="faq">
+    <div class="sec-head">
+      <div class="sec-kicker" data-i18n="faq.kicker">—</div>
+      <h2 data-i18n="faq.h2">FAQ</h2>
+    </div>
+    <div class="faq">
+      <details><summary data-i18n="faq.q1">—</summary><p data-i18n="faq.a1">—</p></details>
+      <details><summary data-i18n="faq.q2">—</summary><p data-i18n="faq.a2">—</p></details>
+      <details><summary data-i18n="faq.q3">—</summary><p data-i18n="faq.a3">—</p></details>
+      <details><summary data-i18n="faq.q4">—</summary><p data-i18n="faq.a4">—</p></details>
+    </div>
+  </section>
+
+  <!-- ══ 其他站点推荐（投票截止后显示） ═════════════════ -->
+  <section class="wrap" id="promoSection" hidden>
+    <div class="sec-head">
+      <div class="sec-kicker" data-i18n="promo.kicker">—</div>
+      <h2 data-i18n="promo.h2">—</h2>
+    </div>
+    <div class="promos" id="promoPage"></div>
+  </section>
+
+  <!-- ══ 底部 CTA ═══════════════════════════════════════ -->
+  <section class="wrap">
+    <div class="final">
+      <h2 data-i18n="final.h2">—</h2>
+      <a class="btn btn-primary btn-lg" href="#apps" data-i18n="final.cta">—</a>
+    </div>
+  </section>
+</main>
+
+<!-- ══ 页脚 ══════════════════════════════════════════════ -->
+<footer>
+  <div class="wrap">
+    <div class="foot-in">
+      <div class="foot-brand">
+        <a class="lockup" href="/">
+          <svg class="mark" viewBox="0 0 32 32" aria-hidden="true">
+            <rect width="32" height="32" rx="9" fill="url(#lg2)"/>
+            <path d="M5.6 16s4-6.3 10.4-6.3S26.4 16 26.4 16s-4 6.3-10.4 6.3S5.6 16 5.6 16Z" stroke="#fff" stroke-width="1.6" stroke-opacity=".92" fill="none"/>
+            <path d="M14.1 12.8 19.4 16l-5.3 3.2v-6.4Z" fill="#fff"/>
+            <defs><linearGradient id="lg2" x1="0" y1="0" x2="32" y2="32">
+              <stop stop-color="#EF3340"/><stop offset=".6" stop-color="#C81E2C"/><stop offset="1" stop-color="#A5121F"/>
+            </linearGradient></defs>
+          </svg>
+          <span class="lockup-txt">
+            <b>InsightEDU<span style="color:#C81E2C">.io</span></b>
+            <span data-i18n="brand.sub">—</span>
+          </span>
+        </a>
+        <p data-i18n="foot.brand">—</p>
+      </div>
+      <div class="foot-links">
+        <div class="foot-col">
+          <h5 data-i18n="foot.colVote">—</h5>
+          <a href="#apps" data-i18n="nav.apps">—</a>
+          <a href="#how" data-i18n="nav.how">—</a>
+          <a href="#rules" data-i18n="nav.rules">—</a>
+          <a href="#faq">FAQ</a>
+        </div>
+        <div class="foot-col">
+          <h5 data-i18n="foot.colOrg">—</h5>
+          <a id="linkSite" href="#" target="_blank" rel="noopener" data-i18n="foot.site">—</a>
+          <a id="linkPlay" href="#" target="_blank" rel="noopener" data-i18n="foot.play">—</a>
+          <a id="linkMail" href="#" data-i18n="foot.contact">—</a>
+        </div>
+      </div>
+    </div>
+    <div class="foot-legal">
+      <span data-i18n="foot.legal1">—</span><br>
+      <span id="footLegal2">—</span>
+    </div>
+  </div>
+</footer>
+
+<!-- ══ 底部投票条 ════════════════════════════════════════ -->
+<div class="ballot" id="ballot" hidden>
+  <div class="wrap ballot-in">
+    <div class="ballot-meter">
+      <div class="pips" id="pips" aria-hidden="true"></div>
+      <div class="ballot-txt" id="ballotTxt" aria-live="polite">—</div>
+    </div>
+    <div class="ballot-actions">
+      <button class="btn btn-sm" id="resetBallot" data-i18n="ballot.reset" hidden>—</button>
+      <button class="btn btn-primary" id="openVote" data-i18n="ballot.submit" disabled>—</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ 投票弹窗 ══════════════════════════════════════════ -->
+<dialog class="modal" id="voteModal" aria-labelledby="modalTitle">
+  <button class="modal-close" id="modalClose" aria-label="Close">✕</button>
+  <div class="modal-card" id="modalCard">
+
+    <div id="modalForm">
+      <div class="modal-eyebrow" id="modalTitle" data-i18n="modal.eyebrow">—</div>
+      <ul class="modal-picks" id="modalPicks"></ul>
+      <p class="pick-privacy" id="commentPrivacy" data-i18n="comment.privacy">—</p>
+
+      <div class="form-msg" id="formMsg" role="alert"></div>
+
+      <form id="voteForm" novalidate>
+        <div class="field">
+          <label for="fName"><span data-i18n="modal.name">—</span><span class="req">*</span></label>
+          <input type="text" id="fName" name="name" maxlength="40" autocomplete="name" data-i18n-ph="modal.namePh" required>
+        </div>
+        <div class="field">
+          <label for="fEmail"><span data-i18n="modal.email">—</span><span class="req">*</span></label>
+          <input type="email" id="fEmail" name="email" maxlength="254" autocomplete="email" data-i18n-ph="modal.emailPh" required>
+          <div class="hint" data-i18n="modal.emailHint">—</div>
+        </div>
+        <label class="consent">
+          <input type="checkbox" id="fConsent" required>
+          <span data-i18n="modal.consent">—</span>
+        </label>
+        <button type="submit" class="btn btn-primary btn-block btn-lg" id="submitBtn" data-i18n="modal.submit">—</button>
+      </form>
+    </div>
+
+    <div class="modal-sent" id="modalSent" hidden>
+      <div class="env" id="sentIcon">📬</div>
+      <h3 id="sentTitle">—</h3>
+      <div class="mail" id="sentEmail"></div>
+      <div class="tips" id="sentTips">—</div>
+      <div class="dev-link" id="devLink" hidden></div>
+      <div class="promo-wrap" id="promoModalWrap" hidden>
+        <div class="promo-head" data-i18n="promo.after">—</div>
+        <div class="promos" id="promoModal"></div>
+      </div>
+      <button class="btn btn-block" id="sentClose" data-i18n="sent.ok">—</button>
+    </div>
+  </div>
+</dialog>
+
+<div class="toast-host" id="toastHost" aria-live="polite" aria-atomic="true"></div>
+
+<script src="/i18n.js?v=36"></script>
+<script src="/app.js?v=36"></script>
+</body>
+</html>

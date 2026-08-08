@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Admin · insightPLAY Vote</title>
+<link rel="stylesheet" href="/styles.css?v=36">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='9' fill='%23EF3340'/><text y='23' x='16' font-size='18' text-anchor='middle'>%F0%9F%93%8A</text></svg>">
+</head>
+<body class="admin-body">
+
+<div class="aurora" aria-hidden="true"><i></i><i></i><i></i></div>
+
+<!-- ══ 登录 ══════════════════════════════════════════════ -->
+<main class="a-login" id="loginView" hidden>
+  <form class="a-login-card" id="loginForm">
+    <div class="a-lock">🔒</div>
+    <h1 data-a="login.title">—</h1>
+    <p data-a="login.sub">—</p>
+    <div class="form-msg" id="loginMsg" role="alert"></div>
+    <div class="field">
+      <label for="pw" data-a="login.label">—</label>
+      <input type="password" id="pw" autocomplete="current-password" required>
+    </div>
+    <button type="submit" class="btn btn-primary btn-block btn-lg" id="loginBtn" data-a="login.cta">—</button>
+  </form>
+</main>
+
+<!-- ══ Dashboard ═════════════════════════════════════════ -->
+<div id="dashView" hidden>
+  <header class="nav">
+    <div class="wrap nav-in">
+      <a class="lockup" href="/">
+        <svg class="mark" viewBox="0 0 32 32" aria-hidden="true">
+          <rect width="32" height="32" rx="9" fill="url(#lg)"/>
+          <path d="M5.6 16s4-6.3 10.4-6.3S26.4 16 26.4 16s-4 6.3-10.4 6.3S5.6 16 5.6 16Z" stroke="#fff" stroke-width="1.6" stroke-opacity=".92" fill="none"/>
+          <path d="M14.1 12.8 19.4 16l-5.3 3.2v-6.4Z" fill="#fff"/>
+          <defs><linearGradient id="lg" x1="0" y1="0" x2="32" y2="32">
+            <stop stop-color="#EF3340"/><stop offset=".6" stop-color="#C81E2C"/><stop offset="1" stop-color="#A5121F"/>
+          </linearGradient></defs>
+        </svg>
+        <span class="lockup-txt"><b>InsightEDU<span style="color:#C81E2C">.io</span></b><span>Admin</span></span>
+      </a>
+      <div class="nav-div" aria-hidden="true"></div>
+      <div class="nav-tag" id="liveTag">—</div>
+      <nav class="nav-links">
+        <div class="lang" id="langSwitch" role="group" aria-label="Language">
+          <button type="button" data-lang="en">EN</button>
+          <button type="button" data-lang="zh">中文</button>
+        </div>
+        <button class="btn btn-sm" id="refreshBtn" data-a="dash.refresh">—</button>
+        <a class="btn btn-sm" id="csvBtn" href="/api/admin/export.csv" data-a="dash.csv">—</a>
+        <button class="btn btn-sm" id="logoutBtn" data-a="dash.logout">—</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="wrap a-main">
+    <div class="sec-head">
+      <div class="sec-kicker" data-a="dash.kicker">—</div>
+      <h2 data-a="dash.h2">—</h2>
+      <p id="dashSub">—</p>
+    </div>
+
+    <div class="stats a-stats">
+      <div class="stat"><b id="kVoters">—</b><span data-a="k.voters">—</span></div>
+      <div class="stat"><b id="kStars">—</b><span data-a="k.stars">—</span></div>
+      <div class="stat"><b id="kComments">—</b><span data-a="k.comments">—</span></div>
+      <div class="stat live"><b id="kLeft">—</b><span data-a="k.left">—</span></div>
+    </div>
+
+    <h3 class="a-h3" data-a="dash.ranking">—</h3>
+    <div class="a-rank" id="rankList"></div>
+    <p class="a-note" data-a="dash.rankNote">—</p>
+
+    <h3 class="a-h3" data-a="dash.comments">—</h3>
+    <div class="a-comments" id="commentList"></div>
+  </main>
+
+  <footer class="page-foot"><div class="wrap foot-legal"><span data-a="dash.foot">—</span></div></footer>
+</div>
+
+<div class="toast-host" id="toastHost" aria-live="polite"></div>
+<script src="/admin.js?v=36"></script>
+</body>
+</html>

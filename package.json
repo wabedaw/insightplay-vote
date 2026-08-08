@@ -1,0 +1,21 @@
+{
+  "name": "insightplay-vote",
+  "version": "1.0.0",
+  "private": true,
+  "description": "insightPLAY × 小菜创业帮 · 学生学习 App 公开票选站(注册 + 邮箱验证 + 一人一票)",
+  "main": "server.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "MAIL_PROVIDER=console DEV_SHOW_LINK=1 node server.js"
+  },
+  "dependencies": {
+    "express": "^5.2.1"
+  },
+  "optionalDependencies": {
+    "nodemailer": "^6.9.14"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

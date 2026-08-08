@@ -1,0 +1,823 @@
+/* ══════════════════════════════════════════════════════════
+   insightPLAY × Lokotopia Student Founder's Club · 票选站
+   新加坡国庆版：红顶白底，呼应国旗的上红下白；
+   首屏是国旗红 + 新月五星 + 烟花，往下全部白底。
+   ══════════════════════════════════════════════════════════ */
+
+:root{
+  /* 国旗红（Pantone 032 那一档，比之前亮一级）
+     ⚠ --red 本身白字只有 4.02，够「大字/纯装饰」不够正文：
+       小号白字压红底一律用 --red-btn（4.78），红字压白底用 --red-dk（5.71）。*/
+  --red:#EF3340;
+  --red-btn:#DE2333;
+  --red-dk:#C81E2C;
+  --red-deep:#A5121F;
+  --red-soft:#FFF3F4;
+  --red-tint:#FFE3E5;
+
+  --bg:#FFFFFF;
+  --bg-soft:#FDF7F7;
+  --surface:#FFFFFF;
+  --surface-2:#F8F9FB;
+  --line:rgba(17,24,39,.11);
+  --line-strong:rgba(17,24,39,.20);
+  --text:#15181F;
+  --muted:#5A6172;
+  --dim:#6B7280;   /* 白底 4.83 —— 原来的 #868D9C 只有 3.33，不够 AA */
+
+  --amber:#D97706;
+  --ok:#15803D;
+  --danger:#DC2626;
+
+  --radius:20px;
+  --shadow:0 20px 44px -22px rgba(20,24,40,.34);
+  --shadow-sm:0 4px 14px -6px rgba(20,24,40,.22);
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+  --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,monospace;
+}
+
+*{box-sizing:border-box;margin:0;padding:0}
+/* hidden 属性会被元素自己的 display 盖掉（.btn 是 inline-flex、.mail 是
+   inline-block），必须显式压回去，否则 el.hidden = true 根本不生效 */
+[hidden]{display:none !important}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{
+  font-family:var(--sans);
+  background:var(--bg);
+  color:var(--text);
+  line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+}
+img{max-width:100%;display:block}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--red);outline-offset:3px;border-radius:6px}
+::selection{background:var(--red-tint)}
+
+/* 深色版里那层极光背景在白底上没用了，留个空壳免得 HTML 里的节点报错 */
+.aurora{display:none}
+
+.wrap{width:min(1140px,100% - 44px);margin-inline:auto}
+
+/* ── 导航 ─────────────────────────────────────────────── */
+.nav{
+  position:sticky;top:0;z-index:60;
+  background:rgba(255,255,255,.86);
+  backdrop-filter:saturate(150%) blur(14px);
+  -webkit-backdrop-filter:saturate(150%) blur(14px);
+  border-bottom:1px solid var(--line);
+}
+.nav-in{display:flex;align-items:center;gap:16px;height:64px}
+.lockup{display:flex;align-items:center;gap:11px;text-decoration:none;flex-shrink:0}
+.mark{width:32px;height:32px;flex-shrink:0}
+.lockup-txt{display:flex;flex-direction:column;line-height:1.15}
+.lockup-txt b{font-size:14.5px;font-weight:800;letter-spacing:-.2px}
+.lockup-txt span{font-size:10.5px;color:var(--dim);letter-spacing:1.4px;text-transform:uppercase;font-weight:600}
+.nav-div{width:1px;height:26px;background:var(--line);flex-shrink:0}
+.nav-tag{
+  font-size:12.5px;font-weight:700;color:var(--red-dk);
+  background:var(--red-soft);border:1px solid var(--red-tint);
+  padding:5px 12px;border-radius:999px;white-space:nowrap;
+}
+.nav-links{margin-left:auto;display:flex;align-items:center;gap:8px}
+.nav-links a{
+  font-size:13.5px;color:var(--muted);text-decoration:none;padding:8px 12px;
+  border-radius:9px;transition:color .18s,background .18s;white-space:nowrap;
+}
+.nav-links a:hover{color:var(--text);background:var(--surface-2)}
+.nav-links .btn{margin-left:6px}
+
+/* 导航里的主按钮：白字红底，悬停反过来变白底红字。
+   必须写成 .nav-links .btn-primary —— 上面 .nav-links a 的权重(0,2,0)
+   比 .btn-primary(0,1,0) 高，不加这条的话按钮文字会被染成灰色。 */
+.nav-links a.btn-primary{color:#fff}
+.nav-links a.btn-primary:hover{
+  background-image:none;
+  background-color:#fff;
+  color:var(--red-dk);
+  box-shadow:0 8px 20px -8px rgba(20,24,40,.45);
+}
+
+/* 语言切换（EN / 中文），默认 EN */
+.lang{display:flex;gap:2px;padding:3px;border-radius:999px;background:var(--surface-2);border:1px solid var(--line);flex-shrink:0}
+.lang button{
+  font-family:inherit;font-size:12px;font-weight:700;letter-spacing:.3px;
+  padding:5px 11px;border-radius:999px;border:none;cursor:pointer;
+  background:transparent;color:var(--dim);transition:color .18s,background .18s;
+}
+.lang button:hover{color:var(--text)}
+.lang button.on{background:var(--red-btn);color:#fff}
+
+/* ── 按钮 ─────────────────────────────────────────────── */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  font-family:inherit;font-size:14.5px;font-weight:700;
+  padding:12px 24px;border-radius:999px;border:1px solid var(--line-strong);
+  background:#fff;color:var(--text);text-decoration:none;cursor:pointer;
+  transition:transform .16s cubic-bezier(.3,.9,.4,1),box-shadow .18s,background .18s,border-color .18s;
+  white-space:nowrap;
+}
+.btn:hover{transform:translateY(-2px);background:var(--surface-2);box-shadow:var(--shadow-sm)}
+.btn:active{transform:translateY(0)}
+.btn-primary{
+  border-color:transparent;color:#fff;
+  background:linear-gradient(135deg,var(--red-btn),var(--red-dk));
+  box-shadow:0 10px 26px -10px rgba(239,51,64,.7);
+}
+.btn-primary:hover{background:linear-gradient(135deg,#CB1F2C,var(--red-deep));box-shadow:0 14px 32px -12px rgba(239,51,64,.85)}
+.btn-lg{font-size:16px;padding:15px 34px}
+.btn-block{width:100%}
+.btn:disabled,.btn[aria-disabled="true"]{opacity:.45;cursor:not-allowed;transform:none;box-shadow:none}
+/* 主按钮光靠透明度还是显得「能点」，禁用时直接换成灰底。
+   拆成 image+color 两条写：shorthand 会跟 .btn-primary 的渐变打架 */
+.btn-primary:disabled,
+.btn-primary:disabled:hover{
+  background-image:none;background-color:#E6E8EE;
+  color:#9AA1B0;opacity:1;box-shadow:none;
+}
+.btn-sm{font-size:13px;padding:9px 16px}
+
+/* ══ Hero：国旗红 + 新月五星 + 烟花 ═════════════════════ */
+.hero{position:relative;overflow:hidden;padding:88px 0 0;color:#fff;
+  background:linear-gradient(168deg,var(--red) 0%,var(--red-dk) 62%,var(--red-deep) 100%);
+}
+.hero-inner{position:relative;z-index:3;text-align:center;padding-bottom:74px}
+
+/* 配了底图时：图铺满，上面压一层暗红蒙版保证白字可读 */
+.hero.has-photo{
+  /* 蒙版做成中心加重：文字落在中间，那里压得最暗（白字过 AA）；
+     越往边缘越透，国旗和光斑还看得见。纯线性蒙版做不到这一点 ——
+     要么中间不够暗，要么整张图被闷死。 */
+  /* 2026-08 调亮：蒙版从暗酒红提到国旗红那一档。实测（把蒙版按浏览器的
+     合成方式在原图上算了一遍，取每块文字覆盖区的最低值）：
+       h1（clamp 最小 21px 粗 → 按 AA 大字 3.0 卡）  3.54 ✅
+       「VOTING CLOSES IN」12px（4.5）              7.59 ✅
+       截止日期行 14px（4.5）                       7.04 ✅
+     再往亮调一档 h1 会掉到 2.96，不达标 —— 这里已经是上限。 */
+  background-image:
+    radial-gradient(125% 95% at 50% 45%,
+      rgba(122,9,19,.58) 0%, rgba(132,11,21,.49) 42%, rgba(165,16,28,.22) 100%),
+    linear-gradient(180deg,rgba(110,8,16,.08),rgba(122,9,18,.40)),
+    var(--hero-img);
+  background-size:cover,cover,cover;
+  background-position:center,center,30% center;  /* 图偏左一点，把国旗留在画面里 */
+  background-repeat:no-repeat;
+}
+/* 图里已经有国旗了，SVG 的新月五星就别重复出现 */
+.hero.has-photo .ndp-crest{display:none}
+
+/* 没配底图时的新月五星水印 */
+.ndp-crest{
+  position:absolute;left:-38px;top:-16px;width:min(46vw,420px);height:auto;z-index:1;
+  fill:#fff;opacity:.09;pointer-events:none;
+}
+/* 烟花 + 彩纸（app.js 生成节点） */
+.starfield{position:absolute;inset:0;z-index:2;pointer-events:none;overflow:hidden}
+.starfield i,.starfield s,.starfield b{position:absolute;display:block}
+.starfield i{border-radius:50%;background:#fff;animation:twinkle 7s ease-in-out infinite}
+@keyframes twinkle{0%,100%{opacity:.16}45%{opacity:.9}}
+.starfield s{
+  width:5px;height:9px;border-radius:1px;background:#FFD8A8;opacity:.55;
+  transform:rotate(var(--r));animation:confetti 8s ease-in-out infinite;
+}
+.starfield s:nth-of-type(even){background:#fff;opacity:.45}
+@keyframes confetti{
+  0%,100%{transform:rotate(var(--r)) translateY(0);opacity:.2}
+  50%{transform:rotate(calc(var(--r) + 40deg)) translateY(14px);opacity:.7}
+}
+.starfield b.fw{width:0;height:0}
+.starfield b.fw u{
+  position:absolute;left:0;top:0;display:block;width:2px;
+  height:calc(24px * var(--s));border-radius:2px;
+  background:linear-gradient(180deg,#FFF3C4,rgba(255,255,255,0));
+  transform-origin:50% 0;
+  animation:burst 5.5s ease-out infinite;
+  animation-delay:inherit;          /* 让整朵烟花共用父层的延时 */
+}
+@keyframes burst{
+  0%{transform:rotate(var(--deg)) translateY(0) scaleY(.1);opacity:0}
+  8%{opacity:1}
+  30%{transform:rotate(var(--deg)) translateY(calc(16px * var(--s))) scaleY(1);opacity:.95}
+  60%{transform:rotate(var(--deg)) translateY(calc(34px * var(--s))) scaleY(.25);opacity:0}
+  100%{opacity:0}
+}
+/* 红色收进白色，接上下面的内容 */
+.hero::after{
+  content:'';position:absolute;left:0;right:0;bottom:0;height:150px;z-index:2;pointer-events:none;
+  background:linear-gradient(180deg,transparent,rgba(142,12,23,.55));
+}
+
+.hero-title{
+  font-size:clamp(21px,3vw,31px);font-weight:800;letter-spacing:-.4px;line-height:1.35;
+  margin:22px auto 0;max-width:min(100%,760px);text-wrap:balance;
+  text-shadow:0 2px 18px rgba(96,8,15,.45);
+}
+.cd-label{
+  font-size:12px;font-weight:700;letter-spacing:3.4px;text-transform:uppercase;
+  color:rgba(255,255,255,.72);margin:30px 0 18px;
+}
+.hero-deadline{margin-top:22px;font-size:14px;color:rgba(255,255,255,.8)}
+.hero-deadline b{color:#fff;font-weight:700}
+
+.kicker{
+  display:inline-flex;align-items:center;gap:9px;
+  font-size:12px;font-weight:700;letter-spacing:2.2px;text-transform:uppercase;
+  color:#fff;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.3);
+  padding:7px 16px;border-radius:999px;
+}
+.kicker .dot{width:6px;height:6px;border-radius:50%;background:#8CF5A9;box-shadow:0 0 10px #8CF5A9;animation:pulse 2.4s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+
+/* 倒计时 —— 首屏主角 */
+.countdown{display:flex;justify-content:center;gap:14px;flex-wrap:wrap}
+.cd-unit{
+  min-width:126px;padding:22px 12px 16px;border-radius:22px;text-align:center;
+  background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);
+  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+}
+.cd-unit b{
+  display:block;font-family:var(--mono);font-weight:700;color:#fff;
+  font-size:clamp(38px,6.4vw,62px);letter-spacing:-2px;line-height:1;
+  font-variant-numeric:tabular-nums;
+}
+.cd-unit span{display:block;margin-top:9px;font-size:11px;color:rgba(255,255,255,.72);letter-spacing:2px;text-transform:uppercase}
+.cd-closed{color:#FFE8A3;font-weight:700;font-size:17px;padding:14px 0}
+
+/* ── 区块标题 ─────────────────────────────────────────── */
+section{scroll-margin-top:84px}
+.sec-head{margin:88px 0 32px;max-width:64ch}
+.sec-kicker{
+  display:flex;align-items:center;gap:12px;
+  /* 11.5px 小字必须 ≥4.5：--red 提亮后只有 4.02，这里要用 --red-dk(5.71) */
+  font-size:11.5px;font-weight:800;letter-spacing:2.4px;text-transform:uppercase;color:var(--red-dk);
+  margin-bottom:14px;
+}
+.sec-kicker::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,var(--red-tint),transparent)}
+.sec-head h2{font-size:clamp(26px,3.8vw,40px);font-weight:820;letter-spacing:-1.1px;line-height:1.18}
+.sec-head p{color:var(--muted);margin-top:14px;font-size:15.5px;line-height:1.75}
+.sec-head p b{color:var(--text)}
+
+/* ── 作品卡片 ─────────────────────────────────────────── */
+.apps{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:20px}
+.card{
+  /* 作品主色在白底上做文字会太浅，压暗一档专门给文字用 */
+  --a-ink:color-mix(in srgb,var(--a) 56%,#0C0F16);
+  position:relative;display:flex;flex-direction:column;gap:15px;
+  padding:26px 24px 24px;border-radius:var(--radius);
+  background:#fff;border:1px solid var(--line);overflow:hidden;
+  box-shadow:var(--shadow-sm);
+  transition:transform .28s cubic-bezier(.3,.9,.4,1),border-color .28s,box-shadow .28s,background .28s;
+}
+.card::before{
+  content:'';position:absolute;inset:0 0 auto;height:4px;
+  background:linear-gradient(90deg,var(--a),color-mix(in srgb,var(--a) 40%,#fff));
+}
+/* 悬停（以及键盘 Tab 进卡片时）整张卡压深一档，用作品自己的主色调，
+   让「现在在哪张卡上」一眼看得出来。 */
+.card:hover,
+.card:focus-within{
+  transform:translateY(-5px);
+  border-color:color-mix(in srgb,var(--a) 45%,transparent);
+  box-shadow:var(--shadow);
+  background:color-mix(in srgb,var(--a) 10%,#fff);
+}
+/* 卡片底色深了，投星区要跟着再深一点，不然两块糊在一起 */
+.card:hover .alloc,
+.card:focus-within .alloc{background:color-mix(in srgb,var(--a) 20%,#fff)}
+.card:hover .chip,
+.card:focus-within .chip{background:rgba(255,255,255,.72)}
+.card.is-voted{border-color:color-mix(in srgb,var(--a) 60%,transparent)}
+
+.card-top{display:flex;align-items:flex-start;gap:14px}
+.glyph{
+  width:56px;height:56px;flex-shrink:0;border-radius:17px;display:grid;place-items:center;
+  font-size:28px;line-height:1;
+  background:color-mix(in srgb,var(--a) 15%,#fff);
+  border:1px solid color-mix(in srgb,var(--a) 34%,transparent);
+  transition:transform .3s cubic-bezier(.3,1.4,.5,1);
+}
+.card:hover .glyph{transform:rotate(-7deg) scale(1.08)}
+
+/* ── 作品 logo ────────────────────────────────────────────
+   各作品的 logo 自带底色（米色、深蓝、奶白都有），所以图直接铺满
+   整块方形，不再垫 accent 底 —— 垫了就是「色块套色块」。
+   1px 内描边压住浅色 logo 和白卡片糊在一起的边界。 */
+.glyph.has-logo,
+.modal-picks .g.has-logo,
+.a-g.has-logo,
+.v-picks .v-g.has-logo{
+  overflow:hidden;padding:0;background:#fff;
+  box-shadow:inset 0 0 0 1px rgba(15,18,25,.07);
+}
+.glyph.has-logo img,
+.modal-picks .g.has-logo img,
+.a-g.has-logo img,
+.v-picks .v-g.has-logo img{
+  width:100%;height:100%;object-fit:cover;display:block;
+}
+.modal-picks .g.has-logo{width:34px;height:34px;border-radius:10px}
+.v-picks .v-g.has-logo{width:38px;height:38px;border-radius:11px}
+.a-cgroup h4 span.has-logo{
+  width:26px;height:26px;border-radius:8px;overflow:hidden;flex-shrink:0;
+  box-shadow:inset 0 0 0 1px rgba(15,18,25,.07);
+}
+.a-cgroup h4 span.has-logo img{width:100%;height:100%;object-fit:cover;display:block}
+.card-no{
+  margin-left:auto;font-family:var(--mono);font-size:30px;font-weight:700;
+  line-height:1;color:transparent;
+  -webkit-text-stroke:1.2px color-mix(in srgb,var(--a) 50%,#fff);
+  letter-spacing:-1px;
+}
+.card h3{font-size:19.5px;font-weight:800;letter-spacing:-.4px;line-height:1.3}
+.card h3 em{display:block;font-style:normal;font-size:12.5px;font-weight:700;color:var(--a-ink);letter-spacing:1.2px;margin-top:3px;text-transform:uppercase}
+.card .tagline{font-size:14.5px;color:#3F4657;line-height:1.68;flex:1}
+
+.chips{display:flex;flex-wrap:wrap;gap:7px}
+.chip{
+  font-size:11.5px;font-weight:600;padding:4.5px 11px;border-radius:999px;
+  background:var(--surface-2);border:1px solid var(--line);color:var(--muted);white-space:nowrap;
+}
+.chip.accent{color:var(--a-ink);border-color:color-mix(in srgb,var(--a) 40%,transparent);background:color-mix(in srgb,var(--a) 12%,#fff)}
+
+/* 票数（只在公开结果时出现） */
+.tally{display:flex;flex-direction:column;gap:7px}
+.tally-row{display:flex;justify-content:space-between;font-size:12.5px;color:var(--muted)}
+.tally-row b{color:var(--text);font-variant-numeric:tabular-nums}
+.bar{height:6px;border-radius:99px;background:var(--surface-2);overflow:hidden}
+.bar i{display:block;height:100%;border-radius:99px;background:var(--a,var(--red));transition:width .8s cubic-bezier(.2,.8,.3,1)}
+.tally-secret{font-size:12.5px;color:var(--dim);display:flex;align-items:center;gap:7px}
+.tally-secret::before{content:'🔒';font-size:12px}
+
+/* 原来这条分隔线在组别那行上，组别删掉后挪到操作区，卡片下半部才不散 */
+.card-actions{display:flex;gap:10px;border-top:1px solid var(--line);padding-top:16px;margin-top:auto}
+.card-actions .btn{flex:1;padding:11px 14px;font-size:14px}
+
+/* ── 卡片里的投星区 ──────────────────────────────────── */
+.alloc{
+  display:flex;flex-direction:column;gap:7px;
+  padding:12px 14px 9px;border-radius:14px;
+  background:color-mix(in srgb,var(--a) 8%,#fff);
+  border:1px solid color-mix(in srgb,var(--a) 28%,transparent);
+}
+.alloc-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-size:12.5px;color:var(--muted)}
+.alloc.starved{opacity:.6}
+.alloc.starved .alloc-label{color:var(--amber)}
+/* 星星本身是装饰，「0 / 5」才是真正说明状态的文字 —— 必须够看清 */
+.alloc-n{font-weight:800;font-size:13px;color:var(--a-ink);font-variant-numeric:tabular-nums}
+.alloc.has .alloc-n{color:var(--a-ink)}
+.stars{display:flex;justify-content:space-between;gap:2px}
+.star{
+  background:none;border:none;padding:1px 2px;cursor:pointer;line-height:1;
+  font-size:27px;color:#D9DDE5;
+  transition:color .15s,transform .12s cubic-bezier(.3,1.5,.5,1);
+}
+.star:hover:not(:disabled){transform:scale(1.2)}
+.star.on{color:var(--a);text-shadow:0 1px 4px color-mix(in srgb,var(--a) 45%,transparent)}
+/* 剩余星星不够时，投不起的那几颗直接压淡禁用 —— 规则不用解释也看得懂 */
+.star:disabled{cursor:not-allowed;color:#EDEFF3}
+.alloc-closed{font-size:12.5px;color:var(--dim);text-align:center;padding:4px 0}
+
+/* ── 三步流程 ─────────────────────────────────────────── */
+.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:18px;counter-reset:s}
+.step{
+  position:relative;padding:26px 24px;border-radius:var(--radius);
+  background:#fff;border:1px solid var(--line);box-shadow:var(--shadow-sm);
+}
+.step::before{
+  counter-increment:s;content:counter(s,decimal-leading-zero);
+  font-family:var(--mono);font-size:13px;font-weight:700;color:var(--red);
+  letter-spacing:1px;display:block;margin-bottom:12px;
+}
+.step h4{font-size:17px;font-weight:800;margin-bottom:9px;letter-spacing:-.3px}
+.step p{font-size:14px;color:var(--muted);line-height:1.72}
+.step p b{color:var(--text)}
+
+/* ── 规则 / 奖励 ──────────────────────────────────────── */
+.panel{padding:34px 32px;border-radius:var(--radius);background:#fff;border:1px solid var(--line);box-shadow:var(--shadow-sm)}
+.prize{
+  display:flex;gap:22px;align-items:center;flex-wrap:wrap;
+  background:linear-gradient(135deg,var(--red-soft),#fff 70%);
+  border-color:var(--red-tint);margin-bottom:22px;
+}
+.prize-badge{
+  width:70px;height:70px;border-radius:22px;display:grid;place-items:center;font-size:34px;flex-shrink:0;
+  background:linear-gradient(140deg,var(--red-btn),var(--red-dk));box-shadow:0 12px 28px -12px rgba(200,30,44,.7);
+}
+.prize-txt{flex:1;min-width:220px}
+.prize-txt h3{font-size:21px;font-weight:820;letter-spacing:-.5px;margin-bottom:7px}
+.prize-txt p{color:var(--muted);font-size:14.5px;line-height:1.7}
+
+/* ── FAQ ──────────────────────────────────────────────── */
+.faq{display:grid;gap:11px}
+details{border:1px solid var(--line);border-radius:15px;background:#fff;overflow:hidden;box-shadow:var(--shadow-sm)}
+details[open]{border-color:var(--red-tint)}
+summary{
+  padding:17px 22px;font-size:15px;font-weight:700;cursor:pointer;list-style:none;
+  display:flex;align-items:center;gap:12px;transition:color .18s;
+}
+summary::-webkit-details-marker{display:none}
+summary::after{content:'+';margin-left:auto;font-size:20px;color:var(--red);font-weight:400;transition:transform .25s}
+details[open] summary::after{transform:rotate(45deg)}
+summary:hover{color:var(--red-dk)}
+details p{padding:0 22px 19px;font-size:14px;color:var(--muted);line-height:1.78}
+details p b{color:var(--text)}
+
+/* ── 其他站点推荐 ─────────────────────────────────────── */
+.promos{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(290px,1fr))}
+.promo{
+  display:flex;flex-direction:column;text-decoration:none;overflow:hidden;
+  border-radius:18px;background:#fff;border:1px solid var(--line);
+  box-shadow:var(--shadow-sm);
+  transition:transform .24s cubic-bezier(.3,.9,.4,1),box-shadow .24s,border-color .24s;
+}
+.promo:hover{transform:translateY(-4px);box-shadow:var(--shadow);border-color:var(--red-tint)}
+.promo-art{display:block;height:104px;overflow:hidden;background:var(--surface-2)}
+.promo-art svg,.promo-art img{width:100%;height:100%;object-fit:cover;display:block}
+.promo-body{display:block;padding:15px 18px 17px}
+.promo-url{
+  display:block;font-family:var(--mono);font-size:11.5px;font-weight:600;
+  color:var(--red-dk);letter-spacing:.2px;margin-bottom:5px;
+}
+.promo-title{display:block;font-size:17px;font-weight:800;letter-spacing:-.35px;margin-bottom:6px}
+.promo-blurb{display:block;font-size:13.5px;color:var(--muted);line-height:1.62}
+.promo-cta{display:inline-block;margin-top:11px;font-size:13.5px;font-weight:800;color:var(--red-dk)}
+.promo:hover .promo-cta{text-decoration:underline}
+
+/* 弹窗里的推荐位（比页面上的紧凑） */
+.promo-wrap{margin-top:22px;padding-top:20px;border-top:1px solid var(--line)}
+.promo-head{
+  font-size:11.5px;font-weight:800;letter-spacing:2px;text-transform:uppercase;
+  color:var(--dim);margin-bottom:12px;text-align:left;
+}
+.promo-wrap .promos{grid-template-columns:1fr;gap:12px;text-align:left}
+.promo-wrap .promo-art{height:78px}
+
+/* ── 底部 CTA ─────────────────────────────────────────── */
+.final{
+  text-align:center;padding:58px 34px;border-radius:26px;margin:96px 0 0;color:#fff;
+  background:linear-gradient(140deg,var(--red-btn),var(--red-dk) 70%,var(--red-deep));
+  box-shadow:0 24px 50px -26px rgba(239,51,64,.7);
+}
+.final h2{font-size:clamp(24px,3.6vw,38px);font-weight:830;letter-spacing:-1.1px;margin-bottom:22px}
+.final .btn-primary{
+  background:#fff;color:var(--red-dk);box-shadow:0 10px 24px -12px rgba(0,0,0,.5);
+}
+.final .btn-primary:hover{background:#FFF1F2}
+
+/* ── 页脚 ─────────────────────────────────────────────── */
+body > footer,
+.page-foot{border-top:1px solid var(--line);margin-top:90px;padding:40px 0 56px;background:var(--bg-soft)}
+.foot-in{display:flex;gap:28px;flex-wrap:wrap;align-items:flex-start;justify-content:space-between}
+.foot-brand{max-width:38ch}
+.foot-brand p{font-size:12.8px;color:var(--dim);line-height:1.8;margin-top:13px}
+.foot-links{display:flex;gap:34px;flex-wrap:wrap}
+.foot-col h5{font-size:11.5px;letter-spacing:1.8px;text-transform:uppercase;color:var(--dim);margin-bottom:12px;font-weight:700}
+.foot-col a{display:block;font-size:13.5px;color:var(--muted);text-decoration:none;padding:4px 0;transition:color .18s}
+.foot-col a:hover{color:var(--red)}
+.foot-legal{margin-top:34px;padding-top:22px;border-top:1px solid var(--line);font-size:12px;color:var(--dim);line-height:1.8}
+
+/* ══ 投票弹窗 ═══════════════════════════════════════════ */
+dialog.modal{
+  position:relative;   /* 关闭按钮挂在这层，卡片内容滚动时它不跟着走 */
+  border:none;padding:0;background:transparent;color:var(--text);
+  max-width:min(520px,calc(100vw - 32px));width:100%;
+  margin:auto;
+}
+dialog.modal::backdrop{background:rgba(30,10,14,.5);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+.modal-card{
+  background:#fff;border:1px solid var(--line);border-radius:24px;
+  padding:30px 30px 26px;box-shadow:0 40px 90px -30px rgba(20,24,40,.6);
+  position:relative;overflow:hidden;
+  animation:modalIn .3s cubic-bezier(.2,.9,.3,1);
+  max-height:min(88vh,940px);overflow-y:auto;
+}
+.modal-card::before{content:'';position:absolute;inset:0 0 auto;height:4px;background:linear-gradient(90deg,var(--red),var(--red-tint))}
+@keyframes modalIn{from{opacity:0;transform:translateY(18px) scale(.97)}to{opacity:1;transform:none}}
+.modal-close{
+  position:absolute;top:16px;right:16px;z-index:4;width:34px;height:34px;border-radius:50%;
+  background:#fff;border:1px solid var(--line-strong);color:var(--muted);
+  font-size:18px;line-height:1;cursor:pointer;transition:color .18s,background .18s;
+  box-shadow:var(--shadow-sm);
+}
+.modal-close:hover{color:var(--text);background:var(--surface-2)}
+.modal-eyebrow{font-size:11.5px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:var(--dim);margin-bottom:14px}
+
+/* 弹窗里回显这张票怎么分的，每个作品带一个选填留言框 */
+.modal-picks{list-style:none;display:grid;gap:9px;margin-bottom:12px}
+.modal-picks li{
+  display:grid;gap:9px;padding:11px 13px;border-radius:12px;
+  background:var(--red-soft);border:1px solid var(--red-tint);
+}
+.pick-head{display:flex;align-items:center;gap:11px}
+.modal-picks .g{font-size:20px;line-height:1;flex-shrink:0}
+.modal-picks .n{flex:1;min-width:0;font-size:14.5px;font-weight:700;letter-spacing:-.2px}
+.modal-picks .s{color:var(--red-dk);font-size:13px;letter-spacing:1px;white-space:nowrap}
+.modal-picks .s i{font-style:normal;color:var(--muted);margin-left:7px;font-size:12px;letter-spacing:0}
+
+.pick-note{
+  width:100%;min-height:48px;resize:vertical;
+  padding:9px 12px;font-family:inherit;font-size:13.5px;line-height:1.5;color:var(--text);
+  background:#fff;border:1px solid var(--line-strong);border-radius:10px;
+  transition:border-color .18s,box-shadow .18s;
+}
+.pick-note::placeholder{color:#A7ADBB}
+.pick-note:focus{outline:none;border-color:var(--red);box-shadow:0 0 0 3px var(--red-tint)}
+.pick-privacy{font-size:12px;color:var(--dim);line-height:1.6;margin-bottom:20px}
+
+.field{margin-bottom:16px}
+.field label{display:block;font-size:13px;font-weight:700;margin-bottom:7px;color:#343B4B}
+.field label .req{color:var(--red);margin-left:2px}
+.field input[type=text],.field input[type=email],.field input[type=password]{
+  width:100%;padding:13px 15px;font-family:inherit;font-size:15px;
+  background:#fff;border:1.5px solid var(--line-strong);border-radius:12px;color:var(--text);
+  transition:border-color .18s,box-shadow .18s;
+}
+.field input::placeholder{color:#A7ADBB}
+.field input:focus{outline:none;border-color:var(--red);box-shadow:0 0 0 3px var(--red-tint)}
+.field input:disabled{opacity:.5}
+.field .hint{font-size:12px;color:var(--dim);margin-top:6px;line-height:1.6}
+
+.consent{display:flex;gap:11px;align-items:flex-start;margin:18px 0 20px;cursor:pointer}
+.consent input{flex-shrink:0;width:19px;height:19px;margin-top:2px;accent-color:var(--red);cursor:pointer}
+.consent span{font-size:12.8px;color:var(--muted);line-height:1.65}
+
+.form-msg{display:none;font-size:13.5px;line-height:1.65;padding:12px 15px;border-radius:12px;margin-bottom:16px}
+.form-msg.show{display:block}
+.form-msg.error{background:var(--red-soft);border:1px solid var(--red-tint);color:var(--red-dk)}
+.form-msg.info{background:#EFF6FF;border:1px solid #BFDBFE;color:#1D4ED8}
+
+/* 弹窗内的成功态 */
+.modal-sent{text-align:center;padding:8px 0 4px}
+.modal-sent .env{font-size:52px;line-height:1;margin-bottom:16px;animation:pop .45s cubic-bezier(.2,1.5,.4,1)}
+@keyframes pop{from{transform:scale(.5);opacity:0}to{transform:none;opacity:1}}
+.modal-sent h3{font-size:22px;font-weight:820;letter-spacing:-.5px;margin-bottom:10px}
+.modal-sent .mail{
+  display:inline-block;font-family:var(--mono);font-size:13.5px;color:var(--red-dk);
+  background:var(--red-soft);border:1px solid var(--red-tint);
+  padding:7px 15px;border-radius:9px;margin:6px 0 18px;word-break:break-all;
+}
+.modal-sent .tips{
+  font-size:13px;color:var(--muted);line-height:1.75;text-align:left;
+  background:var(--surface-2);border:1px solid var(--line);border-radius:13px;padding:14px 17px;margin-bottom:20px;
+}
+.modal-sent .tips b{color:var(--text)}
+.dev-link{font-size:11.5px;word-break:break-all;color:var(--amber);margin-bottom:14px}
+.dev-link a{color:var(--amber)}
+
+/* ══ 底部投票条 ═════════════════════════════════════════ */
+.ballot{
+  position:fixed;left:0;right:0;bottom:0;z-index:80;padding:12px 0;
+  background:rgba(255,255,255,.94);
+  backdrop-filter:saturate(160%) blur(14px);-webkit-backdrop-filter:saturate(160%) blur(14px);
+  border-top:1px solid var(--line);
+  box-shadow:0 -12px 34px -20px rgba(20,24,40,.5);
+  animation:ballotIn .34s cubic-bezier(.2,.9,.3,1);
+}
+@keyframes ballotIn{from{transform:translateY(100%)}to{transform:none}}
+.ballot-in{display:flex;align-items:center;gap:18px;justify-content:space-between}
+.ballot-meter{display:flex;align-items:center;gap:14px;min-width:0}
+.pips{display:flex;gap:5px}
+.pip{width:15px;height:15px;border-radius:50%;border:1.5px solid #D5D9E2;transition:background .2s,border-color .2s,box-shadow .2s}
+.pip.on{background:var(--red);border-color:var(--red);box-shadow:0 0 8px rgba(239,51,64,.4)}
+.ballot-txt{font-size:14px;color:var(--muted);white-space:nowrap}
+.ballot-txt b{color:var(--text);font-size:17px;font-weight:800;font-variant-numeric:tabular-nums}
+.ballot.ready .ballot-txt{color:var(--ok)}
+.ballot.ready .ballot-txt b{color:var(--ok)}
+.ballot-actions{display:flex;gap:10px;flex-shrink:0}
+body.has-ballot{padding-bottom:84px}
+
+/* ── Toast ────────────────────────────────────────────── */
+.toast-host{position:fixed;left:50%;bottom:28px;transform:translateX(-50%);z-index:200;display:grid;gap:9px;width:min(440px,calc(100vw - 32px))}
+.toast{
+  padding:13px 18px;border-radius:14px;font-size:14px;font-weight:600;
+  background:#fff;color:var(--text);
+  border:1px solid var(--line);border-left:4px solid var(--red);
+  box-shadow:var(--shadow);
+  animation:toastIn .32s cubic-bezier(.2,.9,.3,1);
+}
+.toast.error{border-left-color:var(--danger)}
+.toast.ok{border-left-color:var(--ok)}
+@keyframes toastIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+
+/* ══ 邮箱验证结果页 ═════════════════════════════════════ */
+.verify-body{min-height:100vh;display:grid;place-items:center;padding:32px 20px;
+  background:linear-gradient(168deg,var(--red) 0%,var(--red-dk) 58%,var(--red-deep) 100%);
+}
+.v-wrap{width:min(520px,100%)}
+.v-card{
+  text-align:center;padding:46px 34px 34px;border-radius:26px;position:relative;overflow:hidden;
+  background:#fff;border:1px solid var(--line);box-shadow:0 30px 70px -30px rgba(0,0,0,.6);
+}
+.v-card::before{content:'';position:absolute;inset:0 0 auto;height:4px;background:linear-gradient(90deg,var(--red),var(--red-tint))}
+.v-icon{font-size:56px;line-height:1;margin-bottom:20px;animation:pop .5s cubic-bezier(.2,1.5,.4,1)}
+.v-card h1{font-size:27px;font-weight:830;letter-spacing:-.9px;margin-bottom:13px}
+.v-card p{font-size:15px;color:var(--muted);line-height:1.75;margin-bottom:24px}
+.v-picks{list-style:none;display:grid;gap:9px;text-align:left;margin-bottom:26px}
+.v-picks li{
+  display:flex;align-items:center;gap:12px;padding:12px 15px;border-radius:14px;
+  background:var(--red-soft);border:1px solid var(--red-tint);
+}
+.v-picks .v-g{font-size:24px;line-height:1;flex-shrink:0}
+.v-picks .v-n{flex:1;min-width:0}
+.v-picks .v-n b{display:block;font-size:15.5px;font-weight:800;letter-spacing:-.2px}
+.v-picks .v-n em{font-style:normal;font-size:11.5px;color:var(--muted)}
+.v-picks .v-s{color:var(--red-dk);font-size:14px;letter-spacing:1px;white-space:nowrap}
+.v-picks .v-s i{font-style:normal;color:var(--muted);font-size:12px;margin-left:7px;letter-spacing:0}
+.v-foot{margin-top:26px;font-size:11.5px;color:var(--dim);letter-spacing:.4px}
+
+/* ══ 组织者后台 /admin ══════════════════════════════════ */
+.admin-body{min-height:100vh;background:var(--bg-soft)}
+
+.a-login{min-height:100vh;display:grid;place-items:center;padding:32px 20px;
+  background:linear-gradient(168deg,var(--red) 0%,var(--red-dk) 58%,var(--red-deep) 100%);
+}
+.a-login-card{
+  width:min(410px,100%);text-align:center;padding:40px 32px 32px;border-radius:24px;
+  background:#fff;border:1px solid var(--line);box-shadow:0 30px 70px -30px rgba(0,0,0,.6);
+}
+.a-lock{font-size:42px;line-height:1;margin-bottom:16px}
+.a-login-card h1{font-size:23px;font-weight:830;letter-spacing:-.5px;margin-bottom:9px}
+.a-login-card > p{font-size:14px;color:var(--muted);line-height:1.65;margin-bottom:24px}
+.a-login-card .field{text-align:left}
+
+.a-main{padding-bottom:80px}
+.a-stats{margin:26px 0 0}
+.a-h3{font-size:19px;font-weight:820;letter-spacing:-.4px;margin:48px 0 16px}
+.a-note{font-size:12.5px;color:var(--dim);line-height:1.75;margin-top:14px;max-width:76ch}
+.a-empty{color:var(--muted);font-size:14.5px;padding:18px 0}
+
+.a-rank{display:grid;gap:10px}
+.a-row{
+  display:flex;align-items:center;gap:14px;padding:15px 18px;border-radius:16px;
+  background:#fff;border:1px solid var(--line);box-shadow:var(--shadow-sm);
+}
+.a-pos{font-family:var(--mono);font-size:13px;font-weight:700;color:var(--dim);width:22px;text-align:center;flex-shrink:0}
+.a-g{
+  width:42px;height:42px;flex-shrink:0;border-radius:13px;display:grid;place-items:center;font-size:21px;
+  background:var(--red-soft);border:1px solid var(--red-tint);
+}
+.a-body{flex:1;min-width:0;display:grid;gap:7px}
+.a-top{display:flex;justify-content:space-between;align-items:baseline;gap:12px}
+.a-top b{font-size:15.5px;font-weight:800;letter-spacing:-.2px}
+.a-num{font-size:14px;font-weight:800;color:var(--red-dk);white-space:nowrap;font-variant-numeric:tabular-nums}
+.a-num em{font-style:normal;font-weight:600;font-size:12px;color:var(--muted)}
+.a-sub{font-size:12px;color:var(--dim)}
+
+.a-comments{display:grid;gap:20px}
+.a-cgroup h4{
+  display:flex;align-items:center;gap:9px;font-size:15px;font-weight:800;
+  color:var(--red-dk);margin-bottom:10px;
+}
+.a-cgroup h4 span{font-size:18px}
+.a-cgroup h4 em{
+  font-style:normal;font-size:11.5px;font-weight:700;color:var(--dim);
+  background:#fff;border:1px solid var(--line);border-radius:999px;padding:2px 9px;
+}
+.a-c{
+  border-left:3px solid var(--red);
+  background:#fff;border:1px solid var(--line);border-left-width:3px;
+  border-radius:0 12px 12px 0;padding:12px 16px;margin-bottom:8px;
+}
+.a-c p{font-size:14.5px;line-height:1.7;color:#3F4657}
+.a-c footer{font-size:11.5px;color:var(--dim);margin-top:7px}
+.a-c footer span{margin-left:6px}
+
+/* ── 中文修正 ─────────────────────────────────────────
+   这些标签的字距和大写是给拉丁字母设的，中文照搬会变成
+   「公 开 票 选 进 行 中」这种散架感 —— 切中文时收回来。 */
+html[lang^="zh"] .kicker,
+html[lang^="zh"] .cd-label,
+html[lang^="zh"] .sec-kicker,
+html[lang^="zh"] .cd-unit span,
+html[lang^="zh"] .stat span,
+html[lang^="zh"] .foot-col h5,
+html[lang^="zh"] .modal-eyebrow,
+html[lang^="zh"] .promo-head,
+html[lang^="zh"] .v-foot{letter-spacing:.5px}
+
+/* ── 响应式 ───────────────────────────────────────────── */
+@media (max-width:860px){
+  .stats{grid-template-columns:repeat(2,1fr)}
+  .hero{padding-top:64px}
+  .hero-inner{padding-bottom:62px}
+  .ndp-crest{left:-60px;top:-24px;width:70vw;opacity:.07}
+  .sec-head{margin:70px 0 26px}
+  .nav-tag{display:none}
+}
+@media (max-width:640px){
+  .wrap{width:calc(100% - 32px)}
+  .apps{grid-template-columns:1fr}
+  .countdown{gap:8px}
+  .cd-unit{min-width:0;flex:1;padding:16px 4px 12px;border-radius:16px}
+  .cd-unit span{font-size:9.5px;letter-spacing:1px}
+  .cd-label{letter-spacing:2.4px;margin-top:28px}
+  /* 投票条改成两行，10 个 pip 才放得下 */
+  .ballot-in{flex-direction:column;align-items:stretch;gap:10px}
+  .ballot-meter{justify-content:space-between;gap:10px}
+  .pips{gap:4px}
+  .pip{width:13px;height:13px}
+  .ballot-actions .btn{flex:1}
+  body.has-ballot{padding-bottom:142px}
+  .nav-links a:not(.btn){display:none}
+  /* 加了语言切换后导航在 375px 会挤爆，把品牌区和按钮收一收 */
+  .nav-in{gap:10px}
+  .nav-div{display:none}
+  .lockup{gap:8px}
+  .lockup-txt b{font-size:13px}
+  /* 只藏导航里那行 INSIGHTPLAY 小字。用 > 才不会把 <b> 里的 .io 一起藏掉 */
+  .nav .lockup-txt > span{display:none}
+  .lang button{padding:5px 9px;font-size:11px}
+  .nav-links{gap:6px}
+  .nav-links .btn{margin-left:0;padding:9px 14px;font-size:13px}
+  .panel{padding:26px 20px}
+  .final{padding:44px 22px}
+  .modal-card{padding:26px 22px 22px}
+  .card-actions{flex-wrap:wrap}
+  .foot-links{gap:24px}
+  .a-row{flex-wrap:wrap;gap:10px}
+  .a-body{flex-basis:100%}
+  .nav-links .btn-sm{padding:7px 11px;font-size:12px}
+}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.001ms !important;animation-iteration-count:1 !important;transition-duration:.001ms !important}
+  html{scroll-behavior:auto}
+  .card:hover{transform:none}
+  .starfield i,.starfield s{animation:none;opacity:.5}
+  .starfield b.fw{display:none}   /* 烟花不放，静止的火星条不好看 */
+}
+
+/* ══ 星光进度 ═══════════════════════════════════════════════
+   每 100 颗星点亮一颗大星，下一颗按百分比「半亮」。
+   ⚠ 这里只显示全场合计 —— 规则是 10 颗必须投完，所以总星数恒等于
+     投票人数 × 10，不会泄露「哪个作品领先」（那个由 revealResults 管）。 */
+.prog{
+  margin-top:64px;padding:34px 30px 30px;border-radius:var(--radius);
+  background:linear-gradient(170deg,var(--red-soft),#fff 62%);
+  border:1px solid var(--red-tint);box-shadow:var(--shadow-sm);
+}
+.prog-head{text-align:center;max-width:640px;margin:0 auto}
+.prog-kicker{
+  display:inline-flex;align-items:center;gap:7px;
+  font-size:11.5px;font-weight:800;letter-spacing:1.6px;text-transform:uppercase;
+  color:var(--red-dk);margin-bottom:10px;
+}
+.prog-kicker .dot{width:7px;height:7px;border-radius:50%;background:var(--red);animation:pulse 2s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.45;transform:scale(.78)}}
+.prog h2{font-size:clamp(21px,3.2vw,27px);font-weight:800;letter-spacing:-.6px;line-height:1.28}
+.prog-head p{font-size:13.5px;color:var(--muted);margin-top:8px}
+
+.prog-nums{
+  display:flex;justify-content:center;flex-wrap:wrap;gap:10px;
+  margin:26px auto 22px;width:min(560px,100%);
+}
+.prog-num{
+  flex:1 1 140px;text-align:center;padding:12px 8px;border-radius:13px;
+  background:#fff;border:1px solid var(--red-tint);
+}
+.prog-num b{
+  display:block;font-size:29px;font-weight:800;letter-spacing:-1px;line-height:1.1;
+  color:var(--red-dk);font-variant-numeric:tabular-nums;
+}
+.prog-num span{font-size:11.5px;color:var(--muted);letter-spacing:.4px}
+
+/* 星轨：固定每行 10 颗 —— flex-wrap 会按宽度断行，20 颗排成 19+1 很难看。
+   固定列数还顺带让「一行 = 1000 颗星」这件事自己说出来。 */
+.prog-trail{
+  display:grid;grid-template-columns:repeat(10,minmax(0,1fr));
+  gap:9px;justify-items:center;
+  width:min(470px,100%);margin-inline:auto;
+}
+.prog-trail .ps{
+  --fill:0%;
+  width:34px;height:34px;flex-shrink:0;position:relative;
+  color:#E3D9DA;                       /* 未点亮：淡灰，别用纯灰否则显脏 */
+  transition:color .5s ease, transform .45s cubic-bezier(.3,1.5,.5,1);
+}
+.prog-trail .ps svg{width:100%;height:100%;display:block;fill:currentColor}
+/* 已点亮：国旗红实心 + 一圈柔光 */
+.prog-trail .ps.on{color:var(--red);filter:drop-shadow(0 0 7px rgba(239,51,64,.55))}
+.prog-trail .ps.on.just{animation:litPop .62s cubic-bezier(.3,1.6,.5,1)}
+@keyframes litPop{0%{transform:scale(.55) rotate(-22deg)}62%{transform:scale(1.22) rotate(6deg)}100%{transform:scale(1) rotate(0)}}
+/* 正在填的那一颗：底层淡色，上面盖一层按百分比裁切的红色 */
+.prog-trail .ps.part::after{
+  content:'';position:absolute;inset:0;
+  background:var(--red);
+  -webkit-mask:var(--star-mask) center/contain no-repeat;
+          mask:var(--star-mask) center/contain no-repeat;
+  clip-path:inset(calc(100% - var(--fill)) 0 0 0);
+  transition:clip-path .6s ease;
+}
+.prog-note{text-align:center;font-size:13.5px;color:var(--muted);margin-top:18px}
+.prog-note b{color:var(--red-dk);font-weight:800;font-variant-numeric:tabular-nums}
+
+@media (max-width:640px){
+  .prog{padding:26px 18px 24px;margin-top:44px}
+  .prog-trail{gap:6px;width:100%}
+  .prog-trail .ps{width:100%;max-width:27px;height:auto;aspect-ratio:1}
+  .prog-num b{font-size:25px}
+}
+@media (prefers-reduced-motion:reduce){
+  .prog-kicker .dot,.prog-trail .ps.on.just{animation:none}
+  .prog-trail .ps,.prog-trail .ps.part::after{transition:none}
+}
