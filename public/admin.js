@@ -20,6 +20,7 @@
       'login.rate': 'Too many attempts — wait a few minutes.',
       'login.none': 'ADMIN_KEY is not set on the server, so the dashboard is disabled.',
       'login.net': 'Cannot reach the server.',
+      'login.session': 'Key accepted, but the browser did not keep the session cookie. If this site is on plain http://, use https:// — or check that only one server instance is running.',
 
       'dash.kicker': 'Organiser dashboard',
       'dash.h2': 'Results and comments',
@@ -57,6 +58,7 @@
       'login.rate': '尝试太多次了，等几分钟再来。',
       'login.none': '服务端没有设置 ADMIN_KEY，后台已关闭。',
       'login.net': '连不上服务器。',
+      'login.session': '密钥是对的，但浏览器没留住会话 cookie。如果站点是 http:// 的，请改用 https://；也可能是平台跑了多个实例。',
 
       'dash.kicker': '组织者后台',
       'dash.h2': '投票结果与留言',
@@ -144,17 +146,21 @@
     })
       .then(function (r) {
         btn.disabled = false;
-        if (r.ok) { $('pw').value = ''; $('loginMsg').className = 'form-msg'; return load(); }
+        if (r.ok) { $('pw').value = ''; $('loginMsg').className = 'form-msg'; return load(true); }
         showLogin(r.status === 429 ? 'login.rate' : r.status === 503 ? 'login.none' : 'login.bad');
       })
       .catch(function () { btn.disabled = false; showLogin('login.net'); });
   }
 
   /* ── 取数 ──────────────────────────────────────────── */
-  function load() {
+  /** justLoggedIn = 刚刚登录成功。这种情况下再拿到 401，说明密钥是对的、
+      只是 cookie 没被浏览器留住 —— 最常见是站点跑在 http:// 上被 Secure
+      标志挡掉，或者平台起了多个实例（会话存在内存里，换个实例就没了）。
+      这跟「密钥不对」必须分开提示，否则只会看到登录页默默弹回来。 */
+  function load(justLoggedIn) {
     return fetch('/api/admin/summary', { headers: { Accept: 'application/json' } })
       .then(function (r) {
-        if (r.status === 401) { showLogin(); return null; }
+        if (r.status === 401) { showLogin(justLoggedIn ? 'login.session' : ''); return null; }
         if (!r.ok) throw new Error('bad');
         return r.json();
       })

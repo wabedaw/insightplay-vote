@@ -60,7 +60,7 @@ const ADMIN_KEY = process.env.ADMIN_KEY || '';
 const DEV_SHOW_LINK = process.env.DEV_SHOW_LINK === '1';
 const REVEAL = process.env.REVEAL_RESULTS === '1' || CONFIG.revealResults === true;
 const TOKEN_TTL_MS = 48 * 60 * 60 * 1000; // 验证链接有效期 48h
-const ASSET_V = 37; // 改了 public/*.css|js 就 +1，让浏览器丢掉旧缓存
+const ASSET_V = 38; // 改了 public/*.css|js 就 +1，让浏览器丢掉旧缓存
 
 const BALLOT = {
   budget: Number(CONFIG.ballot && CONFIG.ballot.budget) || 10,
@@ -422,13 +422,19 @@ function readCookie(req, name) {
   return null;
 }
 
-function newSession(res) {
+function newSession(req, res) {
   const now = Date.now();
   for (const [tk, exp] of SESSIONS) if (exp < now) SESSIONS.delete(tk); // 顺手清过期
   const token = makeToken();
   SESSIONS.set(token, now + SESSION_TTL_MS);
   const flags = ['HttpOnly', 'SameSite=Strict', 'Path=/', `Max-Age=${SESSION_TTL_MS / 1000}`];
-  if (process.env.NODE_ENV === 'production') flags.push('Secure');
+  // Secure 要看「这一次请求是不是真的走 HTTPS」，不能看 NODE_ENV。
+  // 以前按 NODE_ENV 判：生产环境但只开了 http 的站点（自建 VPS、内网、
+  // 还没配证书的域名），浏览器会直接丢掉带 Secure 的 cookie ——
+  // 表现就是「密码明明对，登录后又弹回登录页，还不报错」。
+  // req.secure 在 trust proxy 打开时会读 X-Forwarded-Proto，
+  // 所以 Render / Railway / Nginx 这类反代后面也判得准。
+  if (req.secure) flags.push('Secure');
   res.setHeader('Set-Cookie', `${COOKIE_NAME}=${token}; ${flags.join('; ')}`);
 }
 
@@ -459,7 +465,7 @@ app.post('/api/admin/login', (req, res) => {
   if (!safeEqual(String((req.body && req.body.password) || ''), ADMIN_KEY)) {
     return res.status(401).json({ error: 'bad_password' });
   }
-  newSession(res);
+  newSession(req, res);
   res.json({ ok: true });
 });
 
