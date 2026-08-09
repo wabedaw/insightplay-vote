@@ -123,7 +123,7 @@ module.exports = {
       },
       cta: { en: 'Card game store', zh: '卡牌游戏商店' },
       art: 'cards',
-      accent: '#B3121E',
+      accent: '#C81E2C',
       // image: '/promo/store.jpg',
     },
     {
@@ -137,7 +137,7 @@ module.exports = {
       },
       cta: { en: 'Start playing', zh: '开始玩' },
       art: 'play',
-      accent: '#E02532',
+      accent: '#EF3340',
       // image: '/promo/play.jpg',
     },
   ],
@@ -219,10 +219,19 @@ module.exports = {
       logo: '/logos/sparkstudy.jpg',
       glyph: '⚡',
       accent: '#E86A17',
+      // 学生 8/8 自己发布的新版本；本站 public/demos/sparkstudy/ 还留着 8/2 的旧构建，
+      // 万一外链挂了，把这行改回 '/demos/sparkstudy/' 就能立刻回退。
       demoUrl: 'https://sparkstudy-demo-0808.zoey1030.chatgpt.site/',
     },
     {
-      id: 'study-safari',
+      // ⚠️ id 必须保持 'study-buddy' —— 这个作品 8/8 改名叫 Study Safari，
+      //    但它就是原来的 Study Buddy（新包里还留着 studybuddy 的存档 key）。
+      //    投票已经开始，星是按 id 存的：改成 'study-safari' 会让已投的票
+      //    从排名里消失（8/8 核对时是 161 颗星 / 40 个人，还在涨）。
+      //    学生的 v3 和 v8 两版包都想改这个 id，两次都挡下来了 —— 下次
+      //    合他们的包，先 curl /api/admin/results 看一眼再动 config。
+      //    id 只在后台和存储里用，页面上从来不显示，改它没有任何好处。
+      id: 'study-buddy',
       no: '05',
       name: 'Study Safari',
       nameEn: 'Explore. Learn. Grow.',
@@ -239,5 +248,4 @@ module.exports = {
       demoUrl: '/demos/study-safari/',
     },
   ],
-
 };

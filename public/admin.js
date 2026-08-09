@@ -20,7 +20,7 @@
       'login.rate': 'Too many attempts — wait a few minutes.',
       'login.none': 'ADMIN_KEY is not set on the server, so the dashboard is disabled.',
       'login.net': 'Cannot reach the server.',
-      'login.session': 'Key accepted, but the browser did not keep the session cookie. If this site is on plain http://, use https:// — or check that only one server instance is running.',
+      'login.session': 'Key accepted, but the browser did not keep the session cookie. Check that the site is on https:// and that only one machine is running.',
 
       'dash.kicker': 'Organiser dashboard',
       'dash.h2': 'Results and comments',
@@ -58,7 +58,7 @@
       'login.rate': '尝试太多次了，等几分钟再来。',
       'login.none': '服务端没有设置 ADMIN_KEY，后台已关闭。',
       'login.net': '连不上服务器。',
-      'login.session': '密钥是对的，但浏览器没留住会话 cookie。如果站点是 http:// 的，请改用 https://；也可能是平台跑了多个实例。',
+      'login.session': '密钥是对的，但浏览器没留住会话 cookie。检查站点是不是 https://，以及是不是跑了不止一台机器。',
 
       'dash.kicker': '组织者后台',
       'dash.h2': '投票结果与留言',
@@ -154,8 +154,8 @@
 
   /* ── 取数 ──────────────────────────────────────────── */
   /** justLoggedIn = 刚刚登录成功。这种情况下再拿到 401，说明密钥是对的、
-      只是 cookie 没被浏览器留住 —— 最常见是站点跑在 http:// 上被 Secure
-      标志挡掉，或者平台起了多个实例（会话存在内存里，换个实例就没了）。
+      只是 cookie 没被浏览器留住 —— 站点跑在 http:// 上被 Secure 挡掉，
+      或者起了不止一台机器（会话在内存里，换台就没了）。
       这跟「密钥不对」必须分开提示，否则只会看到登录页默默弹回来。 */
   function load(justLoggedIn) {
     return fetch('/api/admin/summary', { headers: { Accept: 'application/json' } })

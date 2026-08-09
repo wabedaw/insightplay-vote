@@ -1,0 +1,46 @@
+# insightPLAY 票选站 · vote.insightedu.io
+#
+# ⚠️ 这个 app 必须**单机跑**，不要 scale count > 1：
+#    票存在一个 JSON 文件里（lib/store.js），限流和后台会话在内存里。
+#    多实例会互相覆盖票据。要横向扩，先把 store 换成 Postgres。
+
+app = "insightplay-vote"
+primary_region = "sin"
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  NODE_ENV = "production"
+  PORT = "8080"
+  PUBLIC_BASE_URL = "https://vote.insightedu.io"
+  DATA_DIR = "/data"
+  # 一整班学生共用一个校园 Wi-Fi = 同一个公网 IP。
+  # 默认的 12 会把第 13 个投票的人挡在门外，所以这里显式调高。
+  # 防刷主要靠「一邮箱一票」，这个限流只是挡脚本。
+  RATE_IP_MAX = "60"
+
+# 票据数据盘。销毁 machine 不会销毁 volume；Fly 默认留 5 天每日快照。
+[mounts]
+  source = "vote_data"
+  destination = "/data"
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  # 投票期间保持常驻：冷启动会让第一个访问的人干等，
+  # 而且 auto_start 有可能同时拉起第二台 —— 单机存储扛不住。
+  auto_stop_machines = false
+  auto_start_machines = false
+  min_machines_running = 1
+
+  [[http_service.checks]]
+    interval = "30s"
+    timeout = "5s"
+    grace_period = "10s"
+    method = "GET"
+    path = "/api/health"
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "512mb"

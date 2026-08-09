@@ -52,6 +52,9 @@ cd insightplay-vote && npm install && npm run dev
 | `event.resultDate` | 结果公布日期，`{ en, zh }` |
 | `revealResults` | `false` = 计票中保密（推荐）；`true` = 前端实时显示星数 |
 | `requireEmailVerification` | `false`（当前）= 不发信，提交即计票；`true` = 点验证链接才计票 |
+| `hero.image` | 首屏底图，放 `public/hero/` 下写绝对路径。图上会自动压一层暗色蒙版保证白字可读，所以换图挑「中间偏右比较干净」的横构图。留空 `''` = 只用红色渐变 |
+| `progress` | 首页「星光进度」那一栏。`enabled: false` 整块隐藏；每 `perStar` 颗星点亮一颗大星，一共画 `goal / perStar` 颗（上限 40）。⚠️ 只画**全场合计**（= 投票人数 × 10），不分作品，所以 `revealResults: false` 时放出来也不泄露谁领先。投超了继续计，显示「全部点亮，还在继续」 |
+| `promos[]` | 投票之外的站点推荐。显示在**投票成功弹窗**和**投票截止后的首页**（投票期间首页不显示，别抢投票的注意力）。`art` 用内置插画 `'cards'` / `'play'`；填了 `image` 就改用图片、`art` 自动忽略。留空数组 `[]` = 整块不显示 |
 
 > ⚠️ 开投之后**不要改** `apps[].id` 和 `ballot` 两个数字 ——
 > 星是按 id 存的，改 id 等于把已有的票作废；改 budget 会让先投和后投的票权重不一致。
@@ -61,21 +64,12 @@ cd insightplay-vote && npm install && npm run dev
 
 ### ② 环境变量 —— 后台（发信当前用不到）
 
-复制 `.env.example` 成 `.env`：
+复制 `.env.example`：
 
 ```bash
 PUBLIC_BASE_URL=https://vote.insightedu.io   # 站点对外地址
-ADMIN_KEY=<后台登录密码>                      # 不设的话 /api/admin/* 全部关闭
+ADMIN_KEY=<一长串随机字符>                    # 不设的话 /api/admin/* 全部关闭
 ```
-
-`server.js` 启动时会自己读同目录的 `.env`（没上 dotenv，就十几行；文件不存在就跳过）。
-
-> ⚠️ **`.env` 在 `.gitignore` 里，不会进仓库** —— 所以从 GitHub 拉代码部署的平台
-> （Render / Railway / Fly）**拿不到这个文件**，后台会以「没设 ADMIN_KEY」启动、
-> 整个关闭（登录返回 503）。
->
-> 这类平台要在**它自己的 Environment / Variables 面板**里加 `ADMIN_KEY`。
-> 平台上设的值优先级高于 `.env`，两边都有时以平台为准。
 
 **下面这些只在 `requireEmailVerification: true` 时才需要**，
 当前配置下不发任何邮件，可以先不管。发信通道三选一，按环境变量自动判断：
@@ -116,31 +110,6 @@ curl https://你的域名/api/health
 登录后发一个 **HttpOnly cookie** 会话（8 小时），页面每分钟自动刷新一次。
 登录接口对同 IP 限流（15 分钟 8 次），密码用常数时间比较。
 **没设 `ADMIN_KEY` 的话后台整个关闭**，不会出现空密码蒙进去的情况。
-
-### 登不进去？先看返回码
-
-```bash
-curl -s -o /dev/null -w '%{http_code}\n' -X POST https://你的域名/api/admin/login \
-  -H 'Content-Type: application/json' -d '{"password":"你的ADMIN_KEY"}'
-```
-
-| 码 | 原因 | 怎么修 |
-|---|---|---|
-| `200` | 密钥没问题 | 若浏览器仍进不去，见下面「密码对却弹回登录页」 |
-| `503` | 服务端**没设** `ADMIN_KEY` | 在平台的环境变量面板里加，然后**重新部署** |
-| `401` | 设了但值对不上 | 检查有没有多余空格/引号；大小写敏感 |
-| `429` | 同 IP 15 分钟试超过 8 次 | 等几分钟 |
-| `404` | 路由不存在 | 部署的是旧版本，重新拉一次代码 |
-
-**密码对却弹回登录页**（接口 200 但页面没进去）：会话 cookie 没被浏览器留住。
-
-- **站点是 `http://` 的** —— 会话 cookie 在真 HTTPS 下才带 `Secure`，
-  这一条已按「当前请求的实际协议」判断，所以纯 http 站点也能登。
-  如果你用的是 v8.1 及更早版本，它按 `NODE_ENV` 判，`NODE_ENV=production` + http
-  会让浏览器直接丢掉 cookie —— **升级到 v8.2+**。
-- **平台跑了多个实例** —— 会话存在内存里，登录落在实例 A、下一个请求打到 B 就没了。
-  把实例数调成 1（这个服务本来也只能单进程跑，见第 5 节）。
-- 反代（Nginx / Caddy）要把 `X-Forwarded-Proto` 透传进来，否则服务端判不出是不是 HTTPS。
 
 > ⚠️ `ADMIN_KEY` 现在同时是后台登录密码，**请用一长串随机字符**，别用好记的词。
 > 后台页面能看到全部投票人的姓名和邮箱 —— 这个链接不要外传。
@@ -194,19 +163,45 @@ curl "https://你的域名/api/admin/comments?key=$ADMIN_KEY"
 
 ## 5. 部署
 
-任何能跑 Node 18+ 的地方都行（Render / Railway / Fly / 自己的 VPS）：
+**线上就是 Fly.io：app `insightplay-vote`，区域 `sin`（新加坡），域名
+https://vote.insightedu.io 。** `Dockerfile` 和 `fly.toml` 都在仓库里，改完直接：
 
 ```bash
-NODE_ENV=production node server.js
+cd insightplay-vote && fly deploy
 ```
 
-**两个必须注意的点**：
+首次搭建（已经做完，重建时才需要）：
 
-1. **数据要落在持久化盘上。** 票存在 `data/votes-db.json`。Render 这类平台的
-   容器文件系统重启就清空 —— 挂一块 Persistent Disk，然后 `DATA_DIR=/data`。
-   不做这一步，**重启一次票全没了**。
-2. **只能单进程跑。** 存储是「内存 + 原子落盘」，多实例会互相覆盖。
+```bash
+fly apps create insightplay-vote --org personal
+fly volumes create vote_data --region sin --size 1 -a insightplay-vote   # 票据盘
+fly secrets set ADMIN_KEY="$(openssl rand -hex 24)" IP_SALT="$(openssl rand -hex 24)" -a insightplay-vote
+fly deploy --ha=false          # ⚠️ --ha=false：只要一台机器
+fly certs add vote.insightedu.io -a insightplay-vote
+```
+
+**三个必须注意的点**：
+
+1. **数据在 Fly volume 上。** 票存在 `DATA_DIR=/data/votes-db.json`，`fly.toml`
+   的 `[mounts]` 把 `vote_data` 挂到 `/data`。容器文件系统重启就清空 ——
+   不挂盘，**重启一次票全没了**。volume 默认每天快照、留 5 天。
+   已验证：投一票 → `fly machine restart` → 票还在。
+2. **只能单进程跑，永远不要 `fly scale count 2`。** 存储是「内存 + 原子落盘」，
+   限流和后台会话也在内存里，多实例会互相覆盖票据。所以 `fly.toml` 里
+   `auto_start_machines = false` / `min_machines_running = 1`，部署也要带 `--ha=false`。
    票量到需要多实例的规模再换 SQLite/Postgres（改 `lib/store.js` 一个文件即可）。
+3. **`RATE_IP_MAX` 线上设 60，不是默认的 12。** 一整班学生共用一个校园 Wi-Fi
+   就是同一个公网 IP，12 会把第 13 个投票的孩子挡在门外。见 `fly.toml` 的 `[env]`。
+
+### 备份
+
+volume 快照只留 5 天，且恢复要重建 machine。投票期间建议每天顺手拉一份名单：
+
+```bash
+curl "https://vote.insightedu.io/api/admin/export.csv?key=$ADMIN_KEY" -o "votes-$(date +%F).csv"
+```
+
+⚠️ 导出里有全部投票人的姓名和邮箱 —— **存在仓库外**（比如 `~/Backups/`），不要提交进 git。
 
 ## 6. 目录结构
 
@@ -214,6 +209,8 @@ NODE_ENV=production node server.js
 insightplay-vote/
 ├── config.js            ← 五个作品 + 活动信息（改这个）
 ├── server.js            ← API + 邮箱验证页 + 静态服务
+├── Dockerfile           ← 部署镜像（node:22-slim，无原生依赖）
+├── fly.toml             ← Fly 配置：sin 区、/data 挂盘、单机、RATE_IP_MAX
 ├── lib/
 │   ├── store.js         ← JSON 存储（内存索引 + 原子写）
 │   ├── mailer.js        ← Resend / SMTP / console 三通道 + 双语邮件模板
@@ -225,14 +222,15 @@ insightplay-vote/
 │   ├── admin.js         ← 后台登录 + Dashboard 渲染（自带中英文案）
 │   ├── i18n.js          ← 前端全部固定文案（en / zh）
 │   ├── styles.css       ← 全部样式（含验证结果页）
-│   ├── app.js           ← 星空首屏、卡片渲染、倒计时、投星、语言切换
-│   ├── logos/          ← 各作品的 logo（config.js 里 apps[].logo 指过来）
-│   └── demos/           ← 打包托管的作品（目前只有 Study Safari）
+│   ├── app.js           ← 烟花首屏、卡片渲染、倒计时、投星、推荐位、语言切换
+│   ├── hero/            ← 首屏底图（config.js 的 hero.image 指这里）
+│   ├── logos/           ← 各作品的 logo（config.js 里 apps[].logo 指过来）
+│   └── demos/           ← 打包托管的作品（Study Safari；SparkStudy 旧构建留作外链的回退）
 └── data/votes-db.json   ← 投票数据（gitignore，记得备份）
 ```
 
-> 改了 `styles.css` / `app.js` / `i18n.js` 之后，把 `index.html` 里的 `?v=38`
-> **和 `server.js` 顶部的 `ASSET_V`** 一起往上加一位（验证页也引同一份 CSS），
+> 改了 `styles.css` / `app.js` / `i18n.js` 之后，把 `index.html` **和 `admin.html`**
+> 里的 `?v=37` **和 `server.js` 顶部的 `ASSET_V`** 一起往上加一位（验证页也引同一份 CSS），
 > 否则回访用户拿到的还是浏览器缓存里的旧文件。
 
 ## 7. 接口一览

@@ -10,6 +10,7 @@
     "dev": "MAIL_PROVIDER=console DEV_SHOW_LINK=1 node server.js"
   },
   "dependencies": {
+    "compression": "^1.8.1",
     "express": "^5.2.1"
   },
   "optionalDependencies": {

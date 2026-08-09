@@ -1,0 +1,12 @@
+node_modules
+npm-debug.log
+.git
+.gitignore
+.env
+.env.*
+!.env.example
+# 票据数据绝不进镜像 —— 生产在 /data volume 上，本地这份是测试数据
+data
+.DS_Store
+README.md
+fly.toml

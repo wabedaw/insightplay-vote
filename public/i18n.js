@@ -100,6 +100,7 @@ window.I18N = {
     'prize.p': 'InsightEDU.io puts engineering and design behind it, ships it on insightPLAY, and keeps the original team credited on the product page.',
 
     'faq.kicker': 'FAQ',
+    'faq.h2': 'Before you vote',
     'faq.q1': 'How should I split the 10 stars?',
     'faq.a1': 'However you like. All-in on two (5+5) or spread thin (3+3+2+1+1) — as long as no app gets more than 5 and all 10 are spent.',
     'faq.q2': 'Why do you need my email?',
@@ -224,6 +225,7 @@ window.I18N = {
     'prize.p': 'InsightEDU.io 出工程与设计资源做成正式版本，上线 insightPLAY，产品页保留原创团队署名。',
 
     'faq.kicker': '常见问题',
+    'faq.h2': '投之前，先看这几个',
     'faq.q1': '10 颗星怎么分？',
     'faq.a1': '随你。全押两个（5+5）、平均撒开（3+3+2+1+1）都行，只要单个不超过 5 颗、10 颗全部投完。',
     'faq.q2': '为什么要填邮箱？',

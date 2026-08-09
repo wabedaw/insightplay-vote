@@ -236,7 +236,7 @@
   var PROMO_ART = {
     cards: '<svg viewBox="0 0 400 120" preserveAspectRatio="xMidYMid slice" aria-hidden="true">' +
       '<defs><linearGradient id="pgA" x1="0" y1="0" x2="1" y2="1">' +
-        '<stop offset="0" stop-color="#E02532"/><stop offset="1" stop-color="#8E0C17"/></linearGradient></defs>' +
+        '<stop offset="0" stop-color="#EF3340"/><stop offset="1" stop-color="#A5121F"/></linearGradient></defs>' +
       '<rect width="400" height="120" fill="url(#pgA)"/>' +
       '<circle cx="60" cy="24" r="46" fill="#fff" opacity=".08"/>' +
       '<circle cx="350" cy="104" r="56" fill="#fff" opacity=".07"/>' +
@@ -249,15 +249,15 @@
 
     play: '<svg viewBox="0 0 400 120" preserveAspectRatio="xMidYMid slice" aria-hidden="true">' +
       '<defs><linearGradient id="pgB" x1="0" y1="0" x2="1" y2="1">' +
-        '<stop offset="0" stop-color="#B3121E"/><stop offset="1" stop-color="#E02532"/></linearGradient></defs>' +
+        '<stop offset="0" stop-color="#C81E2C"/><stop offset="1" stop-color="#EF3340"/></linearGradient></defs>' +
       '<rect width="400" height="120" fill="url(#pgB)"/>' +
       '<circle cx="330" cy="20" r="50" fill="#fff" opacity=".09"/>' +
       '<circle cx="52" cy="108" r="44" fill="#fff" opacity=".07"/>' +
       '<g transform="translate(200 60)">' +
         '<rect x="-72" y="-30" width="144" height="60" rx="30" fill="#fff" opacity=".96"/>' +
-        '<rect x="-46" y="-4" width="26" height="7" rx="3.5" fill="#B3121E"/>' +
-        '<rect x="-36" y="-14" width="7" height="26" rx="3.5" fill="#B3121E"/>' +
-        '<circle cx="34" cy="-6" r="7" fill="#E02532"/><circle cx="50" cy="8" r="7" fill="#FFD8A8"/>' +
+        '<rect x="-46" y="-4" width="26" height="7" rx="3.5" fill="#C81E2C"/>' +
+        '<rect x="-36" y="-14" width="7" height="26" rx="3.5" fill="#C81E2C"/>' +
+        '<circle cx="34" cy="-6" r="7" fill="#EF3340"/><circle cx="50" cy="8" r="7" fill="#FFD8A8"/>' +
       '</g>' +
       '<g fill="#fff" opacity=".9">' +
         '<text x="96" y="34" font-size="19" text-anchor="middle">✦</text>' +

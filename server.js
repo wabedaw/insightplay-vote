@@ -14,6 +14,7 @@
 'use strict';
 
 const express = require('express');
+const compression = require('compression');
 const path = require('path');
 const fs = require('fs');
 
@@ -21,21 +22,23 @@ const fs = require('fs');
  * 读 .env（如果有）。没上 dotenv —— 这点活不值得多一个依赖，
  * 也不想依赖 --env-file（要 Node 20.6+，而 README 写的是 18+）。
  *
- * ⚑ 真正的环境变量优先：平台（Render / Railway）上设的值不会被
- *   仓库里残留的 .env 盖掉。文件不存在就静默跳过。
+ * ⚑ 必须排在 require('path') 之后：它自己要用 path.join。
+ * ⚑ 线上不靠这个：Fly 用 `fly secrets set`，值在 secret store 里，
+ *   .dockerignore 也把 .env 挡在镜像外。这个加载器是给本地开发和
+ *   自建 VPS 用的。真实环境变量优先，所以永远盖不掉 Fly 的 secret。
  */
 (function loadDotenv() {
   const file = path.join(__dirname, '.env');
   let raw;
   try { raw = fs.readFileSync(file, 'utf8'); } catch (_) { return; }
   for (const line of raw.split('\n')) {
-    const s = line.trim();
-    if (!s || s[0] === '#') continue;
-    const eq = s.indexOf('=');
+    const t = line.trim();
+    if (!t || t[0] === '#') continue;
+    const eq = t.indexOf('=');
     if (eq < 1) continue;
-    const key = s.slice(0, eq).trim();
+    const key = t.slice(0, eq).trim();
     if (process.env[key] !== undefined) continue;      // 已有的不覆盖
-    let val = s.slice(eq + 1).trim();
+    let val = t.slice(eq + 1).trim();
     if (val.length > 1 && (val[0] === '"' || val[0] === "'") && val.at(-1) === val[0]) {
       val = val.slice(1, -1);
     }
@@ -90,7 +93,9 @@ if (BALLOT.budget > BALLOT.maxPerApp * APP_IDS.length) {
 }
 
 const app = express();
-app.set('trust proxy', 1); // 部署在 Render / Nginx 后面时才拿得到真实 IP
+app.set('trust proxy', 1); // 部署在 Fly / Nginx 后面时才拿得到真实 IP
+// 打包的作品是单个大 HTML（Study Safari 3.1MB），不压缩手机上要等很久
+app.use(compression());
 app.use(express.json({ limit: '16kb' }));
 
 /* 基础安全响应头（没上 helmet，够用就好） */
@@ -104,7 +109,12 @@ app.use((req, res, next) => {
 store.load();
 
 /* ── 限流 ────────────────────────────────────────────────── */
-const ipLimiter = createRateLimiter({ windowMs: 15 * 60 * 1000, max: 12 }); // 同 IP 15 分钟 12 次
+// ⚠️ 同 IP 的上限要按「最大的共享出口」来定，不是按「一个人投几次」。
+// 一整班学生连同一个校园 Wi-Fi 就是同一个公网 IP —— 上限设 12 的话，
+// 第 13 个孩子看到的是「操作太频繁」，票就这么丢了。
+// 生产环境在 fly.toml 里用 RATE_IP_MAX 显式调高；挡刷票主要靠一邮箱一票。
+const RATE_IP_MAX = Number(process.env.RATE_IP_MAX) || 12;
+const ipLimiter = createRateLimiter({ windowMs: 15 * 60 * 1000, max: RATE_IP_MAX });
 const emailLimiter = createRateLimiter({ windowMs: 60 * 60 * 1000, max: 4 }); // 同邮箱 1 小时 4 封
 const clientIp = (req) => req.ip || req.socket.remoteAddress || '';
 
@@ -429,11 +439,11 @@ function newSession(req, res) {
   SESSIONS.set(token, now + SESSION_TTL_MS);
   const flags = ['HttpOnly', 'SameSite=Strict', 'Path=/', `Max-Age=${SESSION_TTL_MS / 1000}`];
   // Secure 要看「这一次请求是不是真的走 HTTPS」，不能看 NODE_ENV。
-  // 以前按 NODE_ENV 判：生产环境但只开了 http 的站点（自建 VPS、内网、
-  // 还没配证书的域名），浏览器会直接丢掉带 Secure 的 cookie ——
-  // 表现就是「密码明明对，登录后又弹回登录页，还不报错」。
-  // req.secure 在 trust proxy 打开时会读 X-Forwarded-Proto，
-  // 所以 Render / Railway / Nginx 这类反代后面也判得准。
+  // 按 NODE_ENV 判的话，生产环境但只开了 http 的站点（自建 VPS、内网、
+  // 还没配证书的域名）会被浏览器直接丢掉 cookie —— 表现是「密码明明对，
+  // 登录后又弹回登录页，还不报错」。本地测不出来：浏览器把 localhost
+  // 当安全上下文，Secure cookie 照存。
+  // Fly 上 force_https + trust proxy，req.secure 恒为 true，行为不变。
   if (req.secure) flags.push('Secure');
   res.setHeader('Set-Cookie', `${COOKIE_NAME}=${token}; ${flags.join('; ')}`);
 }
@@ -652,6 +662,7 @@ app.listen(PORT, () => {
   console.log(`     星数公开   ${REVEAL ? '是（前端可见）' : '否（计票中保密）'}`);
   console.log(`     投票截止   ${deadlineText.zh}`);
   console.log(`     数据文件   ${store.DB_FILE}`);
+  console.log(`     同 IP 限流 15 分钟 ${RATE_IP_MAX} 次（共享校园 Wi-Fi 要调高）`);
   if (!ADMIN_KEY) console.log(`     ⚠️  没设 ADMIN_KEY，/api/admin/* 全部关闭`);
   console.log('');
 });

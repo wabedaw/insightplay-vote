@@ -23,7 +23,7 @@
   --line-strong:rgba(17,24,39,.20);
   --text:#15181F;
   --muted:#5A6172;
-  --dim:#6B7280;   /* 白底 4.83 —— 原来的 #868D9C 只有 3.33，不够 AA */
+  --dim:#6B7280;   /* 白底上要过 AA 4.5:1（#868D9C 只有 3.3:1，语言切换和页脚都在用）*/
 
   --amber:#D97706;
   --ok:#15803D;
@@ -52,6 +52,8 @@ body{
 img{max-width:100%;display:block}
 a{color:inherit}
 :focus-visible{outline:2px solid var(--red);outline-offset:3px;border-radius:6px}
+/* 红底区块上的红色焦点框看不见（1.3:1），换成白色 */
+.hero :focus-visible,.final :focus-visible{outline-color:#fff}
 ::selection{background:var(--red-tint)}
 
 /* 深色版里那层极光背景在白底上没用了，留个空壳免得 HTML 里的节点报错 */
@@ -145,6 +147,8 @@ a{color:inherit}
 
 /* 配了底图时：图铺满，上面压一层暗红蒙版保证白字可读 */
 .hero.has-photo{
+  /* 图 404 的话只剩两层半透明蒙版压在白底上，白字会糊成 2:1 —— 垫个底色兜住 */
+  background-color:var(--red-dk);
   /* 蒙版做成中心加重：文字落在中间，那里压得最暗（白字过 AA）；
      越往边缘越透，国旗和光斑还看得见。纯线性蒙版做不到这一点 ——
      要么中间不够暗，要么整张图被闷死。 */
@@ -233,7 +237,9 @@ a{color:inherit}
 .cd-unit{
   min-width:126px;padding:22px 12px 16px;border-radius:22px;text-align:center;
   background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);
-  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  /* 这里原本有 backdrop-filter:blur(10px)。首屏背后有 74 个一直在动的烟花/彩纸，
+     backdrop-filter 会跟着每帧重新采样重新模糊 —— 中端安卓机只要首屏还在
+     视口里就一直在付这笔钱。半透明白底本身已经够压住底图了，去掉不影响观感。*/
 }
 .cd-unit b{
   display:block;font-family:var(--mono);font-weight:700;color:#fff;
@@ -242,6 +248,26 @@ a{color:inherit}
 }
 .cd-unit span{display:block;margin-top:9px;font-size:11px;color:rgba(255,255,255,.72);letter-spacing:2px;text-transform:uppercase}
 .cd-closed{color:#FFE8A3;font-weight:700;font-size:17px;padding:14px 0}
+
+/* ── 数字卡片条 ───────────────────────────────────────────
+   首屏原本那条（作品数 / 每人星数 / 名额 / 投票人数）已经被下面的
+   「星光进度」取代了，首页不再用。⚠️ 但 admin.html 的汇总条还是
+   `class="stats a-stats"` —— 这几条规则删掉后台就散架，别顺手清掉。
+   下沉的负 margin 和限宽是给首屏那条留的，后台用 .a-stats 盖回去。 */
+.stats{
+  position:relative;z-index:4;
+  color:var(--text);
+  width:min(760px,100%);margin:-34px auto 0;
+  display:grid;grid-template-columns:repeat(4,1fr);gap:1px;
+  background:rgba(17,24,39,.09);
+  border:1px solid rgba(17,24,39,.08);border-radius:16px;
+  overflow:hidden;
+  box-shadow:0 10px 24px -16px rgba(20,24,40,.4);
+}
+.stat{background:#F7EEEF;padding:12px 10px;text-align:center}
+.stat b{display:block;font-size:clamp(22px,3.4vw,32px);font-weight:850;letter-spacing:-.8px;line-height:1.15;font-variant-numeric:tabular-nums}
+.stat span{font-size:12px;color:var(--muted);letter-spacing:.4px}
+.stat.live b{color:var(--red-dk)}
 
 /* ── 区块标题 ─────────────────────────────────────────── */
 section{scroll-margin-top:84px}
@@ -641,22 +667,9 @@ body.has-ballot{padding-bottom:84px}
 .a-login-card .field{text-align:left}
 
 .a-main{padding-bottom:80px}
-/* 后台的四个概览数字。
-   原来是蹭首屏那条 .stats/.stat 的样式，首屏数据条删掉之后这里就裸了 ——
-   现在自带一份，不再依赖别处。 */
-.a-stats{
-  margin:26px 0 0;
-  display:grid;grid-template-columns:repeat(4,1fr);gap:1px;
-  background:rgba(17,24,39,.09);
-  border:1px solid rgba(17,24,39,.08);border-radius:16px;overflow:hidden;
-}
-.a-stats .stat{background:#F7EEEF;padding:14px 10px;text-align:center}
-.a-stats .stat b{
-  display:block;font-size:clamp(22px,3.4vw,30px);font-weight:850;
-  letter-spacing:-.8px;line-height:1.15;font-variant-numeric:tabular-nums;
-}
-.a-stats .stat span{display:block;font-size:12px;color:var(--muted);letter-spacing:.4px;margin-top:2px}
-.a-stats .stat.live b{color:var(--red-dk)}
+/* .stats 现在带 width:min(760px,100%) 是给首屏那条用的；后台这条要占满 .wrap */
+.a-stats{margin:26px 0 0;width:auto}
+/* 手机上四列挤成 84px 一格，数字和标签都要换行 —— 两列 */
 @media (max-width:640px){
   .a-stats{grid-template-columns:repeat(2,1fr)}
 }
